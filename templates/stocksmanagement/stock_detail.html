@@ -1,0 +1,34 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block extra_head %}
+{% endblock %}
+
+{% block content %}
+  <section class="no-padding-top" style="padding-top: 70px !important;">    
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+            <table class='table'>
+                <thead>
+                  <tr>
+                    <th>ITEM NAME</th>
+                    <th>QUANTITY IN STORE</th>
+                    <th>LAST UPDATED</th>
+                    <th>REORDER LEVEL</th>
+                  </tr>
+                </thead>
+                <tr>
+                  <td>{{queryset.item_name}}</td>
+                  <td>{{queryset.quantity}}</td>
+                  <td>{{queryset.last_updated}}</td>
+                  <td>{{queryset.reorder_level}}</td>
+                </tr>
+            </table>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock content %}

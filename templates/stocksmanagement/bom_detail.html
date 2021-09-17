@@ -1,0 +1,60 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block extra_head %}
+{% endblock %}
+
+{% block content %}
+  <section class="no-padding-top" style="padding-top: 70px !important;">    
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+            <table class='table'>
+                <thead>
+                  <tr>
+                    <th>Code TP</th>
+                    <th>Ecus Code</th>
+                    <th>Name</th>
+                    <th>Decription</th>
+                    <th>Unit</th>
+                    <th>Ecus</th>
+                    <th>Name 2</th>
+                    <th>Decription</th>
+                    <th>Unit</th>
+                    <th>BOM</th>
+                    <th>Loss</th>
+                    <th>Thành phẩm xuất</th>
+                    <th>Quy đổi TP xuất</th>
+                    <th>Thành phẩm tồn</th>
+                    <th>Quy đổi thành phẩm tồn</th>
+                  </tr>
+                </thead>
+                <tr>
+                    <td>{{instance.tp_code}}</td>
+                    <td>{{instance.ecus_code}}</td>
+                    <td>{{instance.name}}</td>
+                    <td>{{instance.description}}</td>
+                    <td>{{instance.unit}}</td>
+                    <td>{{instance.ecus}}</td>
+                    <td>{{instance.name_2}}</td>
+
+                    <td><a href="{% url 'update_bom' instance.id %}">{{instance.description_2}}</a></td>
+                    <td>{{instance.unit_2}}</td>
+                    <td>{{instance.bom}}</td>
+
+                    <td>{{instance.loss}}</td>
+                    <td>{{instance.finish_product}}</td>
+                    <td>{{instance.finish_product_convert}}</td>
+
+                    <td>{{instance.finish_product_inventory}}</td>
+                    <td>{{instance.finish_product_exchange}}</td>
+                    <td><a href="{% url 'delete_items' queryset.id %}">Delete</a></td>
+                </tr>
+            </table>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock content %}

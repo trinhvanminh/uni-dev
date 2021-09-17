@@ -1,0 +1,25 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block extra_head %}
+<link href="{% static 'css/nprogress.css' %}" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.11.2/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="" style="padding-top: 70px; padding-bottom: 70px;">    
+  <div class="container">
+    <div class="row">
+        <div class="col-md-6 offset-3">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="myfile">
+                <button type="submit">Upload</button>
+            </form>
+        </div>
+      </div>
+    </div>
+</section>
+{% endblock content %}

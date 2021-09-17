@@ -1,0 +1,81 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block extra_head %}
+{% endblock %}
+
+{% block content %}
+  <section class="no-padding-top" style="padding-top: 70px !important;">    
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+            <table class='table'>
+                <thead>
+                  <tr>
+                    <th>Account Number</th>
+                    <th>Registered Date</th>
+                    <th>Type Code</th>
+                    <th>Goods No</th>
+                    <th>NPL/SP Code</th>
+                    <th>ERP Code</th>
+                    <th>HS</th>
+                    <th>Item Name</th>
+                    <th>Country</th>
+                    <th>Unit Price</th>
+                    <th>Taxed Price</th>
+                    <th>Total</th>
+                    <th>Unit</th>
+                    <th>Total 2</th>
+                    <th>Unit 2</th>
+                    <th>NT value</th>
+                    <th>Total value</th>
+                    <th>Tax rate</th>
+                    <th>Tax cost</th>
+                    <th>Partner</th>
+                    <th>Bill</th>
+                    <th>Bill date</th>
+                    <th>Contract</th>
+                    <th>Contract date</th>
+                  </tr>
+                </thead>
+                <tr>
+                    <td>{{queryset.account_number}}</td>
+                    <td>{{queryset.registered_date}}</td>
+                    <td>{{queryset.type_code}}</td>
+                    <td>{{queryset.goods_no}}</td>
+                    <td>{{queryset.npl_sp_code}}</td>
+                    <td>{{queryset.erp_code}}</td>
+                    <td>{{queryset.hs}}</td>
+
+                    <td><a href="{% url 'update_ecus' queryset.id %}">{{queryset.item_name}}</a></td>
+                    <td>{{queryset.from_country}}</td>
+                    <td>{{queryset.unit_price}}</td>
+
+                    <td>{{queryset.unit_price_taxed}}</td>
+                    <td>{{queryset.total}}</td>
+                    <td>{{queryset.unit}}</td>
+
+                    <td>{{queryset.total_2}}</td>
+                    <td>{{queryset.unit_2}}</td>
+                    <td>{{queryset.nt_value}}</td>
+
+                    <td>{{queryset.total_value}}</td>
+                    <td>{{queryset.tax_rate}}</td>
+                    <td>{{queryset.tax_cost}}</td>
+
+                    <td>{{queryset.partner}}</td>
+                    <td>{{queryset.bill}}</td>
+                    <td>{{queryset.bill_date}}</td>
+
+                    <td>{{queryset.contract}}</td>
+                    <td>{{queryset.contract_date}}</td>
+                    <td><a href="{% url 'delete_items' queryset.id %}">Delete</a></td>
+                </tr>
+            </table>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock content %}
