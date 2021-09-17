@@ -18,7 +18,7 @@ class Stock(models.Model):
     item_name = models.CharField(max_length=50, blank=True, null=True)
     ecus_code = models.CharField(max_length=50, blank=True, null=True)
     item_desciption = models.CharField(max_length=150, blank=True, null=True)
-    date = models.DateTimeField(blank=True, null=True)
+    date = models.DateTimeField(blank=True, null=True, auto_now_add=True)
 
     begin_quantity = models.FloatField(blank=True, null=True)
     begin_price = models.FloatField(blank=True, null=True)
