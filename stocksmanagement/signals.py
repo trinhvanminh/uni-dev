@@ -7,6 +7,8 @@ from .models import Balance, Ecus, BOM
 def on_ecus_change(sender, instance, **kwargs):
     if instance.id is None:
         try:
+            if not instance.npl_sp_code:
+                return
             balance_query = Balance.objects.get(pk=instance.npl_sp_code)
             if instance.type_code == 'E21':
                 balance_query.e21 += instance.total
@@ -35,6 +37,8 @@ def on_ecus_change(sender, instance, **kwargs):
     else:
         previous = Ecus.objects.get(id=instance.id)
         try:
+            if not instance.npl_sp_code:
+                return
             balance_query = Balance.objects.get(pk=instance.npl_sp_code)
             if instance.type_code == 'E21':
                 balance_query.e21 = balance_query.e21 + instance.total - previous.total
@@ -73,6 +77,8 @@ def on_ecus_change(sender, instance, **kwargs):
 def on_bom_change(sender, instance, **kwargs):
     if instance.id is None:
         try:
+            if not instance.ecus_code:
+                return
             balance_query = Balance.objects.get(pk=instance.ecus_code)
             balance_query.fg_stock += instance.finish_product_exchange
             balance_query.save()
@@ -87,6 +93,8 @@ def on_bom_change(sender, instance, **kwargs):
     else:
         previous = BOM.objects.get(id=instance.id)
         try:
+            if not instance.ecus_code:
+                return
             balance_query = Balance.objects.get(pk=instance.ecus_code)
             balance_query.fg_stock = balance_query.fg_stock + \
                 instance.finish_product_exchange - previous.finish_product_exchange
