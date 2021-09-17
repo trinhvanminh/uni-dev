@@ -1,0 +1,198 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block extra_head %}
+<link href="{% static 'css/nprogress.css' %}" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.11.2/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="" style="padding-top: 40px; padding-bottom: 50px;">    
+  <div class="container">
+    <div class="col-md-4 offset-9 pb-5" style="padding-left: 60px;">
+      <a class="btn btn-primary" href="{% url 'add_items' %}">Add Item</a>
+      <a class="btn btn-info" href="{% url 'import_excel' %}">Import Excel</a>
+    </div>
+    <div class="row">
+      <div class="col-md-2">
+            <form method='POST' action=''>{% csrf_token %}
+              <div id="div_id_category" class="form-group"> 
+                <label for="id_category" class=" requiredField">
+                Category
+                </label> 
+                <div class="">
+                  <select name="description" class="select form-control" id="id_description">
+                    <option value="" selected="">---------</option>
+                  
+                    <option value="Finished Goods(제품)">Finished Goods(제품)</option>
+                  
+                    <option value="Merchandise(상품)">Merchandise(상품)</option>
+                  
+                    <option value="Raw Material(원자재)">Raw Material(원자재)</option>
+                  
+                    <option value="Semi-Finished Goods(반제품)">Semi-Finished Goods(반제품)</option>
+                  
+                  </select>
+                </div> 
+              </div>
+              <div id="div_id_item_name" class="form-group"> 
+                <label for="id_item_name" class="">
+                Item name
+                </label> 
+                <div class=""> 
+                  <input type="text" name="item_name" maxlength="50" class="textinput textInput form-control" id="id_item_name"> 
+                </div> 
+              </div>
+
+              <div class="form-check">
+                <input type="checkbox" name="export_to_CSV" class="form-check-input" id="id_export_to_CSV">
+                <label class="form-check-label" for="id_export_to_CSV">Export to CSV</label>
+              </div>
+              <br>
+              <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+            <br>
+        </div>
+        <div class="col-md-10" style="overflow-x: scroll;">
+          <table id="itemTable" class="table table-hover table align-middle">
+            <caption>List of items</caption>
+            <thead>
+              <tr>
+                <th rowspan="2" colspan="1" >
+                  No
+                </th>
+                <th rowspan="2" colspan="1">
+                  Acount Description
+                </th>
+                <th rowspan="2" colspan="1">
+                  Item Name
+                </th>
+                <th rowspan="2" colspan="1">
+                  Ecus code
+                </th>
+                <th rowspan="2" colspan="1">
+                  Item Description
+                </th>
+                <th rowspan="1" colspan="3">
+                  Beginning Inventory
+                </th>
+                <th rowspan="1" colspan="3">
+                  PR Purchase Receipt
+                </th>
+                <th rowspan="1" colspan="3">
+                  MR Production Receipt
+                </th>
+                <th rowspan="1" colspan="3">
+                  OR Unplanned Receipt
+                </th>
+                <th rowspan="1" colspan="3">
+                  Stock Transfer Receipt
+                </th>
+                <th rowspan="1" colspan="3">
+                  PI Issue for production
+                </th>
+                <th rowspan="1" colspan="3">
+                  DI Sales Issue
+                </th>
+                <th rowspan="1" colspan="3">
+                  OI Unplanned Issue
+                </th>
+                <th rowspan="1" colspan="3">
+                  Stock Transfer Issue
+                </th>
+            </tr>
+            <tr>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Amount</th>
+                <th>Price</th>
+            </tr>
+            </thead>
+            <tbody>
+              {% for instance in queryset %}
+                  <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{instance.description}}</td>
+                    <td><a href="{% url 'update_items' instance.id %}">{{instance.item_name}}</a></td>
+                    <td>{{instance.ecus_code}}</td>
+                    <td>{{instance.item_desciption}}</td>
+                    <td>{{instance.begin_quantity}}</td>
+                    <td>{{instance.begin_price}}</td>
+                    <td>{{instance.begin_price}}</td>
+
+                    <td>{{instance.pr_purchase_quantity}}</td>
+                    <td>{{instance.pr_purchase_price}}</td>
+                    <td>{{instance.pr_purchase_price}}</td>
+
+                    <td>{{instance.mr_production_quantity}}</td>
+                    <td>{{instance.mr_production_price}}</td>
+                    <td>{{instance.mr_production_price}}</td>
+
+                    <td>{{instance.or_unplanned_quantity}}</td>
+                    <td>{{instance.or_unplanned_price}}</td>
+                    <td>{{instance.or_unplanned_price}}</td>
+
+                    <td>{{instance.stock_transfer_quantity}}</td>
+                    <td>{{instance.stock_transfer_price}}</td>
+                    <td>{{instance.description}}</td>
+
+                    <td>{{instance.pi_issue_production_quantity}}</td>
+                    <td>{{instance.pi_issue_production_price}}</td>
+                    <td>{{instance.description}}</td>
+
+                    <td>{{instance.di_sale_issue_quantity}}</td>
+                    <td>{{instance.di_sale_issue_price}}</td>
+                    <td>{{instance.description}}</td>
+
+                    <td>{{instance.oi_unplanned_issue_quantity}}</td>
+                    <td>{{instance.oi_unplanned_issue_price}}</td>
+                    <td>{{instance.description}}</td>
+
+                    <td>{{instance.stock_transfer_issue_quantity}}</td>
+                    <td>{{instance.stock_transfer_issue_price}}</td>
+                    <td>{{instance.description}}</td>
+                    <!-- <td><a href="{% url 'delete_items' instance.id %}">Delete</a></td>
+                    <td><a href="{% url 'stock_detail' instance.id %}">{{instance.quantity}}</a></td> -->
+                  </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/jquery.ui.widget@1.10.3/jquery.ui.widget.js"></script>
+<script src="{% static 'js/paging.js' %}"></script>
+<script src="{% static 'js/nprogress.js' %}"></script>
+<script src="https://cdn.datatables.net/1.11.2/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.2/js/dataTables.bootstrap4.min.js"></script>
+<script src="{% static 'js/custom_paging.js' %}"></script>
+{% endblock extra_scripts %}

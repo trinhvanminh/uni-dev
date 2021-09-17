@@ -1,0 +1,96 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block extra_head %}
+<link href="{% static 'css/nprogress.css' %}" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.11.2/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="" style="padding-top: 40px; padding-bottom: 50px;">    
+  <div class="container">
+    <div class="row">
+      <div class="col-md-2">
+        <form method="GET">
+          <div id="div_id_ecus_code" class="form-group"> 
+            <label for="id_ecus_code" class="">Ecus code</label> 
+            <div class="">
+              <input type="text" name="ecus_code" value='{{ request.GET.ecus_code }}' maxlength="20" class="textinput textInput form-control" id="id_ecus_code"> 
+            </div> 
+          </div> 
+          <div id="div_id_description" class="form-group"> 
+            <label for="id_description" class="">Description</label> 
+            <div class=""> 
+              <input type="text" name="description" value='{{ request.GET.description }}' maxlength="100" class="textinput textInput form-control" id="id_description"> 
+            </div> 
+          </div>
+          <br>
+          <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+            <br>
+        </div>
+        <div class="col-md-10" style="overflow-x: scroll;">
+          <table class="table table-hover table align-middle">
+            <caption>List of items</caption>
+            <thead>
+            <tr>
+                <th>No</th>
+                <th>ERP code</th>
+                <th>Ecus Code</th>
+                <th>Decription</th>
+                <th>E21</th>
+                <th>B13</th>
+                <th>A42</th>
+                <th>E52</th>
+                <th>RM Stock</th>
+                <th>FG Stock</th>
+                <th>WIP</th>
+            </tr>
+            </thead>
+            <tbody>
+              {% for instance in queryset %}
+                  <tr>
+                    <td>{{forloop.counter}}</td>
+                    <td>{{instance.erp_code}}</td>
+                    <td>{{instance.ecus_code}}</td>
+                    <td>{{instance.description}}</td>
+                    <td>{{instance.e21}}</td>
+                    <td>{{instance.b13}}</td>
+                    <td>{{instance.a42}}</td>
+                    <td>{{instance.e52}}</td>
+                    <td>{{instance.rm_stock}}</td>
+                    <td>{{instance.fg_stock}}</td>
+                    <td>{{instance.wip_stock}}</td>
+                  </tr>
+              {% endfor %}
+            </tbody>
+            {% if is_paginated %}
+              {% if page_obj.has_previous %}
+                <a class="btn btn-outline-info mb-4" href="?page=1{% if request.GET.ecus_code %}&q={{ request.GET.ecus_code }}{% endif %}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}">First</a>
+                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.q }}{% endif %}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}">Previous</a>
+              {% endif %}
+
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <a class="btn btn-info mb-4" href="?page={{ num }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}">{{ num }}</a>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <a class="btn btn-outline-info mb-4" href="?page={{ num }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}">{{ num }}</a>
+                {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}">Next</a>
+                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}">Last</a>
+              {% endif %}
+            {% endif %}
+          </table>
+        </div>
+      </div>
+    </div>
+</section>
+{% endblock content %}
+
+{% block extra_scripts %}
+{% endblock extra_scripts %}

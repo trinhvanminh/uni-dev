@@ -1,0 +1,22 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <section class="newsletter no-padding-top" style="padding-top: 70px !important;">    
+    <div class="container">
+      <div class="row">
+        <div class="col-md-8">
+            <form method="post" action="">
+                {% csrf_token %}
+                <h1>Are you sure you want to delete?</h1><br>
+                <input class="btn btn-danger btn-sm col-sm-4" type="submit" value="Yes" />
+                <br>
+                <br>
+                <a href="{% url 'list_items' %}"><div class="btn btn-primary">Cancel</div></a>
+            </form>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock content %}

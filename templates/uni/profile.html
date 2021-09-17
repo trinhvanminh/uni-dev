@@ -1,0 +1,82 @@
+{% extends '../base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Latest Posts -->
+        <main class="posts-listing col-lg-8">
+            <div class="container">
+                <div class="row">
+                </div>
+            </div>
+        </main>
+        <aside class="col-lg-4">
+            <!-- Widget [Search Bar Widget]-->
+            <!-- <div class="widget search">
+                <header>
+                    <h3 class="h6">Search the blog</h3>
+                </header>
+                <form action="#" class="search-form">
+                    <div class="form-group">
+                        <input type="text" name="q" placeholder="What are you looking for?">
+                        <button type="submit" class="submit"><i class="icon-search"></i></button>
+                    </div>
+                </form>
+            </div> -->
+            <!-- Widget [Latest Posts Widget]        -->
+            <div class="widget latest-posts">
+                <header>
+                    <h3 class="h6">Your informations</h3>
+                </header>
+                <div class="blog-posts">
+                    <a href="{% url 'list_items' %}">
+                        <div class="item d-flex align-items-center">
+                            <!-- <div class="image"><img src="{{ post.thumbnail.url }}" alt="..." class="img-fluid"></div> -->
+                            <div class="title"><strong>View your IOB</strong>
+                                <div class="d-flex align-items-center">
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="{% url 'list_ecus' %}">
+                        <div class="item d-flex align-items-center">
+                            <!-- <div class="image"><img src="{{ post.thumbnail.url }}" alt="..." class="img-fluid"></div> -->
+                            <div class="title"><strong>View your Ecus</strong>
+                                <div class="d-flex align-items-center">
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <a href="{% url 'list_bom' %}">
+                        <div class="item d-flex align-items-center">
+                            <!-- <div class="image"><img src="{{ post.thumbnail.url }}" alt="..." class="img-fluid"></div> -->
+                            <div class="title"><strong>View your BOM</strong>
+                                <div class="d-flex align-items-center">
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                    <hr>
+                    <a href="{% url 'list_balance' %}">
+                        <div class="item d-flex align-items-center">
+                            <!-- <div class="image"><img src="{{ post.thumbnail.url }}" alt="..." class="img-fluid"></div> -->
+                            <div class="title"><strong>BALANCE</strong>
+                                <div class="d-flex align-items-center">
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <!-- Widget [Categories Widget]-->
+            <div class="widget categories">
+                <header>
+                    <h3 class="h6">Categories</h3>
+                </header>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock content %}
