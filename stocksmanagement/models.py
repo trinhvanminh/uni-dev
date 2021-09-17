@@ -93,7 +93,7 @@ class BOM(models.Model):
     name = models.CharField(max_length=100, blank=True, null=True)
     rm_code = models.CharField(max_length=100, blank=True, null=True)
     description = models.CharField(max_length=100, blank=True, null=True)
-    unit = models.CharField(max_length=4, blank=True, null=True)
+    unit = models.CharField(max_length=20, blank=True, null=True)
     ecus = models.CharField(max_length=20, blank=True, null=True)
     name_2 = models.CharField(max_length=20, blank=True, null=True)
     description_2 = models.CharField(max_length=100, blank=True, null=True)
