@@ -1,1 +1,1 @@
-web: gunicorn uni_site:app --preload
+web: gunicorn uni_site.wsgi --preload
