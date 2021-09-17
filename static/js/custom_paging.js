@@ -1,9 +1,9 @@
 
 
 $(document).ready( function () {
-    // $('.table').paging({limit:15});
-    // NProgress.start();
-    // NProgress.done();
+    $('.table').paging({limit:15});
+    NProgress.start();
+    NProgress.done();
 
-    $('#itemTable').DataTable();
+    // $('#itemTable').DataTable();
 } );

@@ -1,14 +1,15 @@
+from client.models import Client
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
-from .models import Stock, Ecus, BOM
-from .forms import BOMCreateForm, BOMSearchForm, BOMUpdateForm, EcusSearchForm, EcusUpdateForm, StockCreateForm, StockSearchForm, StockUpdateForm, EcusCreateForm
+from .models import Balance, Stock, Ecus, BOM
+from .forms import BOMCreateForm, BOMSearchForm, BOMUpdateForm, BalanceSearchForm, EcusSearchForm, EcusUpdateForm, StockCreateForm, StockSearchForm, StockUpdateForm, EcusCreateForm
 from django.contrib.auth.decorators import login_required
-# from django.views.generic import CreateView
-# from django.contrib.auth.mixins import LoginRequiredMixin
 import pandas as pd
 import csv
+from django.views.generic import ListView
 from datetime import datetime
+from django.core.paginator import Paginator
 
 
 @login_required
@@ -292,16 +293,53 @@ def ecus_detail(request, pk):
 '''------------BOM------------'''
 
 
+class BOMListView(ListView):
+    model = BOM
+    template_name = 'stocksmanagement/list_bom.html'
+    context_object_name = 'queryset'
+    # ordering = ['-date_posted']
+    paginate_by = 20
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = BOMSearchForm(self.request.GET)
+        context['title'] = 'BOM'
+        return context
+
+    def get_queryset(self):
+        query_set = BOM.objects.all().filter(client=self.request.user)
+        ecus_code = self.request.GET.get('ecus_code', '')
+        tp_code = self.request.GET.get('tp_code', '')
+        ecus = self.request.GET.get('ecus', '')
+        if ecus_code:
+            query_set = query_set.filter(
+                ecus_code__icontains=ecus_code
+            )
+        if tp_code:
+            query_set = query_set.filter(
+                tp_code__icontains=tp_code
+            )
+        if ecus:
+            query_set = query_set.filter(
+                ecus__icontains=ecus
+            )
+        return query_set
+
+
 @login_required
 def list_bom(request):
     form = BOMSearchForm(request.POST or None)
     client = request.user
     title = 'List of BOM'
     queryset = BOM.objects.all().filter(client=client)
+    paginator = Paginator(queryset, 25)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         "title": title,
         "queryset": queryset,
         "form": form,
+        "page_obj": page_obj
     }
 
     if request.method == 'POST':
@@ -439,3 +477,58 @@ def bom_detail(request, pk):
         "queryset": queryset,
     }
     return render(request, "stocksmanagement/bom_detail.html", context)
+
+
+@login_required
+def list_balance(request):
+    form = BalanceSearchForm(request.POST or None)
+    client = request.user
+    title = 'Balance'
+    queryset = Balance.objects.all().filter(client=client)
+    context = {
+        "title": title,
+        "queryset": queryset,
+        "form": form,
+    }
+
+    if request.method == 'POST':
+        queryset = queryset.filter(
+            ecus_code__icontains=form['ecus_code'].value(),
+            description__icontains=form['description'].value()
+        )
+        context = {
+            "title": title,
+            "form": form,
+            "queryset": queryset,
+        }
+        return render(request, "stocksmanagement/list_balance.html", context)
+
+    return render(request, "stocksmanagement/list_balance.html", context)
+
+
+class BalanceListView(ListView):
+    model = Balance
+    template_name = 'stocksmanagement/list_balance.html'
+    context_object_name = 'queryset'
+    # ordering = ['-date_posted']
+    paginate_by = 20
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = BalanceSearchForm(self.request.GET)
+        context['title'] = 'Balance'
+        return context
+
+    def get_queryset(self):
+        query_set = Balance.objects.all().filter(client=self.request.user)
+        ecus_code = self.request.GET.get('ecus_code', '')
+        description = self.request.GET.get('description', '')
+        if ecus_code:
+            query_set = query_set.filter(
+                ecus_code__icontains=ecus_code
+            )
+        if description:
+            query_set = query_set.filter(
+                description__icontains=description
+            )
+        return query_set

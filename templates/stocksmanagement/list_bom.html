@@ -11,48 +11,14 @@
 {% block content %}
 <section class="" style="padding-top: 40px; padding-bottom: 50px;">    
   <div class="container">
-    <div class="col-md-4 offset-9 pb-5" style="padding-left: 60px;">
+    <div class="col-md-4 offset-9" style="padding-left: 60px;">
       <a class="btn btn-primary" href="{% url 'add_items_bom' %}">Add Item</a>
       <a class="btn btn-info" href="{% url 'import_excel_bom' %}">Import Excel</a>
     </div>
     <div class="row">
       <div class="col-md-2">
-            <form method='POST'>
-              {% csrf_token %}
-              {{ form | crispy }}
-              <!-- <div id="div_id_category" class="form-group"> 
-                <label for="id_category" class=" requiredField">
-                Category
-                </label> 
-                <div class="">
-                  <select name="description" class="select form-control" id="id_description">
-                    <option value="" selected="">---------</option>
-                  
-                    <option value="Finished Goods(제품)">Finished Goods(제품)</option>
-                  
-                    <option value="Merchandise(상품)">Merchandise(상품)</option>
-                  
-                    <option value="Raw Material(원자재)">Raw Material(원자재)</option>
-                  
-                    <option value="Semi-Finished Goods(반제품)">Semi-Finished Goods(반제품)</option>
-                  
-                  </select>
-                </div> 
-              </div>
-              <div id="div_id_item_name" class="form-group"> 
-                <label for="id_item_name" class="">
-                Item name
-                </label> 
-                <div class=""> 
-                  <input type="text" name="item_name" maxlength="50" class="textinput textInput form-control" id="id_item_name"> 
-                </div> 
-              </div>
-
-              <div class="form-check">
-                <input type="checkbox" name="export_to_CSV" class="form-check-input" id="id_export_to_CSV">
-                <label class="form-check-label" for="id_export_to_CSV">Export to CSV</label>
-              </div> -->
-              <br>
+            <form method='GET'>
+              {{ form | crispy }}<br>
               <button type="submit" class="btn btn-primary">Submit</button>
               </form>
             <br>
@@ -107,18 +73,26 @@
                   </tr>
               {% endfor %}
             </tbody>
+              {% if page_obj.has_previous %}
+                <a class="btn btn-outline-info mb-4" href="?page=1{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.tp_code %}&tp_code={{ request.GET.tp_code }}{% endif %}{% if request.GET.ecus %}&ecus={{ request.GET.ecus }}{% endif %}">First</a>
+                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.tp_code %}&tp_code={{ request.GET.tp_code }}{% endif %}{% if request.GET.ecus %}&ecus={{ request.GET.ecus }}{% endif %}">Previous</a>
+              {% endif %}
+
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <a class="btn btn-info mb-4" href="?page={{ num }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.tp_code %}&tp_code={{ request.GET.tp_code }}{% endif %}{% if request.GET.ecus %}&ecus={{ request.GET.ecus }}{% endif %}">{{ num }}</a>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <a class="btn btn-outline-info mb-4" href="?page={{ num }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.tp_code %}&tp_code={{ request.GET.tp_code }}{% endif %}{% if request.GET.ecus %}&ecus={{ request.GET.ecus }}{% endif %}">{{ num }}</a>
+                {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.tp_code %}&tp_code={{ request.GET.tp_code }}{% endif %}{% if request.GET.ecus %}&ecus={{ request.GET.ecus }}{% endif %}">Next</a>
+                <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.tp_code %}&tp_code={{ request.GET.tp_code }}{% endif %}{% if request.GET.ecus %}&ecus={{ request.GET.ecus }}{% endif %}">Last</a>
+              {% endif %}
           </table>
         </div>
       </div>
     </div>
 </section>
 {% endblock content %}
-
-{% block extra_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/jquery.ui.widget@1.10.3/jquery.ui.widget.js"></script>
-<script src="{% static 'js/paging.js' %}"></script>
-<script src="{% static 'js/nprogress.js' %}"></script>
-<script src="https://cdn.datatables.net/1.11.2/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.2/js/dataTables.bootstrap4.min.js"></script>
-<script src="{% static 'js/custom_paging.js' %}"></script>
-{% endblock extra_scripts %}

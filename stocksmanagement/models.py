@@ -20,31 +20,31 @@ class Stock(models.Model):
     item_desciption = models.CharField(max_length=150, blank=True, null=True)
     date = models.DateTimeField(blank=True, null=True)
 
-    begin_quantity = models.IntegerField(blank=True, null=True)
+    begin_quantity = models.FloatField(blank=True, null=True)
     begin_price = models.FloatField(blank=True, null=True)
 
-    pr_purchase_quantity = models.IntegerField(blank=True, null=True)
+    pr_purchase_quantity = models.FloatField(blank=True, null=True)
     pr_purchase_price = models.FloatField(blank=True, null=True)
 
-    mr_production_quantity = models.IntegerField(blank=True, null=True)
+    mr_production_quantity = models.FloatField(blank=True, null=True)
     mr_production_price = models.FloatField(blank=True, null=True)
 
-    or_unplanned_quantity = models.IntegerField(blank=True, null=True)
+    or_unplanned_quantity = models.FloatField(blank=True, null=True)
     or_unplanned_price = models.FloatField(blank=True, null=True)
 
-    stock_transfer_quantity = models.IntegerField(blank=True, null=True)
+    stock_transfer_quantity = models.FloatField(blank=True, null=True)
     stock_transfer_price = models.FloatField(blank=True, null=True)
 
-    pi_issue_production_quantity = models.IntegerField(blank=True, null=True)
+    pi_issue_production_quantity = models.FloatField(blank=True, null=True)
     pi_issue_production_price = models.FloatField(blank=True, null=True)
 
-    di_sale_issue_quantity = models.IntegerField(blank=True, null=True)
+    di_sale_issue_quantity = models.FloatField(blank=True, null=True)
     di_sale_issue_price = models.FloatField(blank=True, null=True)
 
-    oi_unplanned_issue_quantity = models.IntegerField(blank=True, null=True)
+    oi_unplanned_issue_quantity = models.FloatField(blank=True, null=True)
     oi_unplanned_issue_price = models.FloatField(blank=True, null=True)
 
-    stock_transfer_issue_quantity = models.IntegerField(blank=True, null=True)
+    stock_transfer_issue_quantity = models.FloatField(blank=True, null=True)
     stock_transfer_issue_price = models.FloatField(blank=True, null=True)
     export_to_CSV = models.BooleanField(default=False)
 
@@ -58,7 +58,7 @@ class Ecus(models.Model):
     account_number = models.CharField(max_length=20, blank=True, null=True)
     registered_date = models.DateField(blank=True, null=True)
     type_code = models.CharField(max_length=3, blank=True, null=True)
-    goods_no = models.IntegerField(blank=True, null=True)
+    goods_no = models.FloatField(blank=True, null=True)
     npl_sp_code = models.CharField(max_length=20, blank=True, null=True)
     erp_code = models.CharField(max_length=20, blank=True, null=True)
     hs = models.CharField(max_length=10, blank=True, null=True)
@@ -82,6 +82,9 @@ class Ecus(models.Model):
 
     export_to_CSV = models.BooleanField(default=False)
 
+    def __str__(self) -> str:
+        return self.npl_sp_code
+
 
 class BOM(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
@@ -97,12 +100,15 @@ class BOM(models.Model):
     unit_2 = models.CharField(max_length=4, blank=True, null=True)
     bom = models.FloatField(blank=True, null=True)
     loss = models.FloatField(blank=True, null=True)
-    finish_product = models.IntegerField(blank=True, null=True)
+    finish_product = models.FloatField(blank=True, null=True)
     finish_product_convert = models.FloatField(blank=True, null=True)
     finish_product_inventory = models.FloatField(blank=True, null=True)
     finish_product_exchange = models.FloatField(blank=True, null=True)
 
     export_to_CSV = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return self.ecus_code
 
 
 class Balance(models.Model):
@@ -112,11 +118,14 @@ class Balance(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
     ecus_unit = models.CharField(max_length=4, blank=True, null=True)
     unit = models.CharField(max_length=4, blank=True, null=True)
-    e21 = models.IntegerField(blank=True, null=True)
-    b13 = models.IntegerField(blank=True, null=True)
-    a42 = models.IntegerField(blank=True, null=True)
-    e52 = models.IntegerField(blank=True, null=True)
-    ecus = models.IntegerField(blank=True, null=True)
-    rm_stock = models.IntegerField(blank=True, null=True)
-    fg_stock = models.IntegerField(blank=True, null=True)
-    wip_stock = models.IntegerField(blank=True, null=True)
+    e21 = models.FloatField(blank=True, null=True)
+    b13 = models.FloatField(blank=True, null=True)
+    a42 = models.FloatField(blank=True, null=True)
+    e52 = models.FloatField(blank=True, null=True)
+    ecus = models.FloatField(blank=True, null=True)
+    rm_stock = models.FloatField(blank=True, null=True)
+    fg_stock = models.FloatField(blank=True, null=True)
+    wip_stock = models.FloatField(blank=True, null=True)
+
+    def __str__(self) -> str:
+        return self.ecus_code

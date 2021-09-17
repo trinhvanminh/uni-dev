@@ -1,5 +1,5 @@
 from django import forms
-from .models import Stock, Ecus, BOM
+from .models import Balance, Stock, Ecus, BOM
 
 ''' STOCK IOB '''
 
@@ -179,3 +179,9 @@ class BOMCreateForm(forms.ModelForm):
         if not tp_code:
             raise forms.ValidationError('This field is required')
         return tp_code
+
+
+class BalanceSearchForm(forms.ModelForm):
+    class Meta:
+        model = Balance
+        fields = ['ecus_code', 'description']
