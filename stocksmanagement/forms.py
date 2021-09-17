@@ -136,8 +136,6 @@ class BOMSearchForm(forms.ModelForm):
         model = BOM
         fields = ['tp_code', 'ecus_code', 'ecus']
 
-    export_to_CSV = forms.BooleanField(required=False)
-
 
 class BOMUpdateForm(forms.ModelForm):
     class Meta:
