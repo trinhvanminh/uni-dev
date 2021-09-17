@@ -5,5 +5,5 @@ $(document).ready( function () {
     NProgress.start();
     NProgress.done();
 
-    // $('#itemTable').DataTable();
+    $('#itemTable').DataTable();
 } );
