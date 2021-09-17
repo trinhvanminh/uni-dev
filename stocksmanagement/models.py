@@ -1,5 +1,6 @@
 from django.db import models
 from client.models import Client
+from django.utils import timezone
 
 description_choice = (
     ('Finished Goods(제품)', 'Finished Goods(제품)'),
@@ -18,7 +19,7 @@ class Stock(models.Model):
     item_name = models.CharField(max_length=50, blank=True, null=True)
     ecus_code = models.CharField(max_length=50, blank=True, null=True)
     item_desciption = models.CharField(max_length=150, blank=True, null=True)
-    date = models.DateTimeField(blank=True, null=True, auto_now_add=True)
+    date = models.DateTimeField(default=timezone.now)
 
     begin_quantity = models.FloatField(blank=True, null=True)
     begin_price = models.FloatField(blank=True, null=True)
