@@ -97,7 +97,7 @@ class BOM(models.Model):
     ecus = models.CharField(max_length=20, blank=True, null=True)
     name_2 = models.CharField(max_length=20, blank=True, null=True)
     description_2 = models.CharField(max_length=100, blank=True, null=True)
-    unit_2 = models.CharField(max_length=4, blank=True, null=True)
+    unit_2 = models.CharField(max_length=20, blank=True, null=True)
     bom = models.FloatField(blank=True, null=True)
     loss = models.FloatField(blank=True, null=True)
     finish_product = models.FloatField(blank=True, null=True)
