@@ -1,50 +1,54 @@
+from django.db.models import query
 from client.models import Client
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Balance, Stock, Ecus, BOM
 from .forms import BOMCreateForm, BOMSearchForm, BOMUpdateForm, BalanceSearchForm, EcusSearchForm, EcusUpdateForm, StockCreateForm, StockSearchForm, StockUpdateForm, EcusCreateForm
 from django.contrib.auth.decorators import login_required
 import pandas as pd
 import csv
 from django.views.generic import ListView
-from datetime import datetime
-from django.core.paginator import Paginator
 
 
-@login_required
-def list_items(request):
-    form = StockSearchForm(request.POST or None)
-    client = request.user
-    title = 'IOB'
-    queryset = Stock.objects.all().filter(client=client)
-    context = {
-        "title": title,
-        "queryset": queryset,
-        "form": form,
-    }
+class IOBListView(LoginRequiredMixin, ListView):
+    model = Stock
+    template_name = 'stocksmanagement/list_items.html'
+    context_object_name = 'queryset'
+    ordering = ['-date']
+    paginate_by = 20
+    query_set = None
 
-    if request.method == 'POST':
-        queryset = queryset.filter(
-            description__icontains=form['description'].value(),
-            item_name__icontains=form['item_name'].value()
-        )
-        if form['export_to_CSV'].value() == True:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = StockSearchForm(self.request.GET)
+        context['title'] = 'IOB'
+        return context
+
+    def get_queryset(self):
+        self.query_set = Stock.objects.all().filter(client=self.request.user)
+        description = self.request.GET.get('description', '')
+        item_name = self.request.GET.get('item_name', '')
+        export_to_csv = self.request.GET.get('export_to_CSV', False)
+        print(export_to_csv)
+        if description:
+            self.query_set = self.query_set.filter(
+                description__icontains=description
+            )
+        if item_name:
+            self.query_set = self.query_set.filter(
+                item_name__icontains=item_name
+            )
+        if export_to_csv:
             response = HttpResponse(content_type='text/csv')
             response['Content-Disposition'] = 'attachment; filename="List of stock.csv"'
             writer = csv.writer(response)
             writer.writerow(['description', 'ITEM NAME', 'QUANTITY'])
-            for stock in queryset:
+            for stock in self.query_set:
                 writer.writerow(
-                    [stock.description, stock.item_name, stock.quantity])
-            return response
-        context = {
-            "title": title,
-            "form": form,
-            "queryset": queryset,
-        }
-
-    return render(request, "stocksmanagement/list_items.html", context)
+                    [stock.description, stock.item_name])
+        return self.query_set
 
 
 @login_required
@@ -63,6 +67,7 @@ def add_items(request):
     return render(request, "stocksmanagement/add_items.html", context)
 
 
+@login_required
 def update_items(request, pk):
     queryset = Stock.objects.get(id=pk)
     form = StockUpdateForm(instance=queryset)
@@ -79,6 +84,7 @@ def update_items(request, pk):
     return render(request, "stocksmanagement/add_items.html", context)
 
 
+@login_required
 def delete_items(request, pk):
     queryset = Stock.objects.get(id=pk)
     if request.method == 'POST':
@@ -87,6 +93,7 @@ def delete_items(request, pk):
     return render(request, 'stocksmanagement/confirm_delete.html', {"title": 'Confirm delete'})
 
 
+@login_required
 def stock_detail(request, pk):
     queryset = Stock.objects.get(id=pk)
     context = {
@@ -97,11 +104,18 @@ def stock_detail(request, pk):
 
 
 def check_format(df):
-    if len(df.columns) != 34:
+    format = ['Item Acount Description', 'Item', 'Mã Ecus', 'Item Description',
+              'Quantity', 'Amount', 'Price', 'Quantity.1', 'Amount.1', 'Price.1',
+              'Quantity.2', 'Amount.2', 'Price.2', 'Quantity.3', 'Amount.3',
+              'Price.3', 'Quantity.4', 'Amount.4', 'Price.4', 'Quantity.5',
+              'Amount.5', 'Price.5', 'Quantity.6', 'Amount.6', 'Price.6',
+              'Quantity.7', 'Amount.7', 'Price.7', 'Quantity.8', 'Amount.8',
+              'Price.8', 'Quantity.9', 'Amount.9', 'Price.9']
+    set1 = set(format)
+    set2 = set(df.columns.tolist())
+    is_subset = set1.issubset(set2)
+    if not is_subset:
         return False
-    if df.columns[0] != 'Item Acount Description':
-        return False
-    print('NICE FORMAT')
     return True
 
 
@@ -109,37 +123,73 @@ def check_format(df):
 def import_excel(request):
     if request.method == 'POST':
         file_name = request.FILES['myfile']
-        imported_data = pd.read_excel(
-            file_name.read(), header=10, sheet_name='IOB')
+        try:
+            imported_data = pd.read_excel(
+                file_name.read(), header=10, sheet_name='IOB')
+        except Exception:
+            messages.warning(
+                request, "Wrong format, please make sure the file you input is excel and the sheet contain information name 'IOB'")
+            return redirect('import_excel')
         if check_format(imported_data):
             for _, row in imported_data.iterrows():
-                item = Stock(
-                    client=request.user,
-                    description=row['Item Acount Description'],
-                    item_name=row['Item'],
-                    ecus_code=row['Mã Ecus'],
-                    item_desciption=row['Item Description'],
-                    begin_quantity=row['Quantity'],
-                    begin_price=row['Price'],
-                    pr_purchase_quantity=row['Quantity.1'],
-                    pr_purchase_price=row['Amount.1'],
-                    mr_production_quantity=row['Quantity.2'],
-                    mr_production_price=row['Amount.2'],
-                    or_unplanned_quantity=row['Quantity.3'],
-                    or_unplanned_price=row['Amount.3'],
-                    stock_transfer_quantity=row['Quantity.4'],
-                    stock_transfer_price=row['Amount.4'],
-                    pi_issue_production_quantity=row['Quantity.5'],
-                    pi_issue_production_price=row['Amount.5'],
-                    di_sale_issue_quantity=row['Quantity.6'],
-                    di_sale_issue_price=row['Amount.6'],
-                    oi_unplanned_issue_quantity=row['Quantity.7'],
-                    oi_unplanned_issue_price=row['Amount.7'],
-                    stock_transfer_issue_quantity=row['Quantity.8'],
-                    stock_transfer_issue_price=row['Amount.8'],
-                )
+                item = Stock(client=request.user)
+
+                if row['Item Acount Description']:
+                    item.description = row['Item Acount Description'],
+                if row['Item']:
+                    item.item_name = row['Item']
+                if row['Mã Ecus']:
+                    item.ecus_code = row['Mã Ecus']
+                if row['Item Description']:
+                    item.item_desciption = row['Item Description']
+                if row['Quantity']:
+                    item.begin_quantity = row['Quantity']
+                if row['Price']:
+                    item.begin_price = row['Price']
+                if row['Quantity.1']:
+                    item.pr_purchase_quantity = row['Quantity.1']
+                if row['Amount.1']:
+                    item.pr_purchase_price = row['Amount.1']
+                if row['Quantity.2']:
+                    item.mr_production_quantity = row['Quantity.2']
+                if row['Amount.2']:
+                    item.mr_production_price = row['Amount.2']
+                if row['Quantity.3']:
+                    item.or_unplanned_quantity = row['Quantity.3']
+                if row['Amount.3']:
+                    item.or_unplanned_price = row['Amount.3']
+                if row['Quantity.4']:
+                    item.stock_transfer_quantity = row['Quantity.4']
+                if row['Amount.4']:
+                    item.stock_transfer_price = row['Amount.4']
+                if row['Quantity.5']:
+                    item.pi_issue_production_quantity = row['Quantity.5']
+                if row['Amount.5']:
+                    item.pi_issue_production_price = row['Amount.5']
+                if row['Quantity.6']:
+                    item.di_sale_issue_quantity = row['Quantity.6']
+                if row['Amount.6']:
+                    item.di_sale_issue_price = row['Amount.6']
+                if row['Quantity.7']:
+                    item.oi_unplanned_issue_quantity = row['Quantity.7']
+                if row['Amount.7']:
+                    item.oi_unplanned_issue_price = row['Amount.7']
+                if row['Quantity.8']:
+                    item.stock_transfer_issue_quantity = row['Quantity.8']
+                if row['Amount.8']:
+                    item.stock_transfer_issue_price = row['Amount.8']
                 item.save()
             messages.success(request, 'Data Imported')
+            return redirect('list_items')
+        else:
+            messages.warning(request, '''Wrong format, please make sure the excel table contains at least these columns ['Item Acount Description', 'Item', 'Mã Ecus', 'Item Description',
+                                        'Quantity', 'Amount', 'Price', 'Quantity.1', 'Amount.1', 'Price.1',
+                                        'Quantity.2', 'Amount.2', 'Price.2', 'Quantity.3', 'Amount.3',
+                                        'Price.3', 'Quantity.4', 'Amount.4', 'Price.4', 'Quantity.5',
+                                        'Amount.5', 'Price.5', 'Quantity.6', 'Amount.6', 'Price.6',
+                                        'Quantity.7', 'Amount.7', 'Price.7', 'Quantity.8', 'Amount.8',
+                                        'Price.8', 'Quantity.9', 'Amount.9', 'Price.9']''')
+            return redirect('import_excel')
     return render(request, 'stocksmanagement/import_excel.html', {'title': 'Import as excel'})
 
 
@@ -155,31 +205,32 @@ def import_excel(request):
 '''----------ECUS---------'''
 
 
-@login_required
-def list_ecus(request):
-    form = EcusSearchForm(request.POST or None)
-    client = request.user
-    title = 'List of Items'
-    queryset = Ecus.objects.all().filter(client=client)
-    context = {
-        "title": title,
-        "queryset": queryset,
-        "form": form,
-    }
+class EcusListView(LoginRequiredMixin, ListView):
+    model = Ecus
+    template_name = 'stocksmanagement/list_ecus.html'
+    context_object_name = 'queryset'
+    ordering = ['-registered_date']
+    paginate_by = 20
+    query_set = None
 
-    if request.method == 'POST':
-        queryset = queryset.filter(
-            type_code__icontains=form['type_code'].value(),
-            from_country__icontains=form['from_country'].value()
-        )
-        context = {
-            "title": title,
-            "form": form,
-            "queryset": queryset,
-        }
-        return render(request, "stocksmanagement/list_ecus.html", context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Ecus'
+        return context
 
-    return render(request, "stocksmanagement/list_ecus.html", context)
+    def get_queryset(self):
+        self.query_set = Ecus.objects.all().filter(client=self.request.user)
+        type_code = self.request.GET.get('type_code', '')
+        from_country = self.request.GET.get('from_country', '')
+        if type_code:
+            self.query_set = self.query_set.filter(
+                type_code__icontains=type_code
+            )
+        if from_country:
+            self.query_set = self.query_set.filter(
+                from_country__icontains=from_country
+            )
+        return self.query_set
 
 
 @login_required
@@ -200,11 +251,13 @@ def update_ecus(request, pk):
 
 
 def check_ecus_format(df):
-    if len(df.columns) != 26:
+    format = ['Số TK', 'Ngày ĐK', 'Mã loại hình', 'STT hàng', 'Mã NPL/SP', 'Mã ERP', 'Mã HS', 'Tên hàng', 'Xuất xứ', 'Đơn giá', 'Đơn giá tính thuế', 'Tổng số lượng', 'Đơn vị tính',
+              'Tổng số lượng 2', 'Đơn vị tính 2', 'Trị giá NT', 'Tổng trị giá', 'Thuế suất XNK', 'Tiền thuế XNK', 'Tên đối tác', 'Số hóa đơn', 'Ngày hóa đơn', 'Số hợp đồng', 'Ngày hợp đồng']
+    set1 = set(format)
+    set2 = set(df.columns.tolist())
+    is_subset = set1.issubset(set2)
+    if not is_subset:
         return False
-    if df.columns[1] != 'Số TK':
-        return False
-    print('NICE FORMAT')
     return True
 
 
@@ -215,43 +268,68 @@ def import_excel_ecus(request):
         try:
             imported_data = pd.read_excel(
                 file_name.read(), sheet_name='Ecus')
-        except ValueError:
+        except Exception:
             messages.warning(
-                request, 'Wrong format, make sure the sheet contain informations name Ecus')
+                request, 'Wrong format, make sure the files you import is excel file and the sheet contain informations name Ecus')
             return render(request, 'stocksmanagement/import_excel.html')
         if check_ecus_format(imported_data):
             for _, row in imported_data.iterrows():
-                item = Ecus(
-                    client=request.user,
-                    account_number=row['Số TK'],
-                    registered_date=row['Ngày ĐK'].date(),
-                    type_code=row['Mã loại hình'],
-                    goods_no=row['STT hàng'],
-                    npl_sp_code=row['Mã NPL/SP'],
-                    erp_code=row['Mã ERP'],
-                    hs=row['Mã HS'],
-                    item_name=row['Tên hàng'],
-                    from_country=row['Xuất xứ'],
-                    unit_price=row['Đơn giá'],
-                    unit_price_taxed=row['Đơn giá tính thuế'],
-                    total=row['Tổng số lượng'],
-                    unit=row['Đơn vị tính'],
-                    total_2=row['Tổng số lượng 2'],
-                    unit_2=row['Đơn vị tính 2'],
-                    nt_value=row['Trị giá NT'],
-                    total_value=row['Tổng trị giá'],
-                    tax_rate=row['Thuế suất XNK'],
-                    tax_cost=row['Tiền thuế XNK'],
-                    partner=row['Tên đối tác'],
-                    bill=row['Số hóa đơn'],
-                    bill_date=row['Ngày hóa đơn'].date(),
-                    contract=row['Số hợp đồng'],
-                )
+                item = Ecus(client=request.user)
+                if row['Số TK']:
+                    item.account_number = row['Số TK']
+                if row['Ngày ĐK']:
+                    item.registered_date = row['Ngày ĐK'].date()
+                if row['Mã loại hình']:
+                    item.type_code = row['Mã loại hình']
+                if row['STT hàng']:
+                    item.goods_no = row['STT hàng']
+                if row['Mã NPL/SP']:
+                    item.npl_sp_code = row['Mã NPL/SP']
+                if row['Mã ERP']:
+                    item.erp_code = row['Mã ERP']
+                if row['Mã HS']:
+                    item.hs = row['Mã HS']
+                if row['Tên hàng']:
+                    item.item_name = row['Tên hàng']
+                if row['Xuất xứ']:
+                    item.from_country = row['Xuất xứ']
+                if row['Đơn giá']:
+                    item.unit_price = row['Đơn giá']
+                if row['Đơn giá tính thuế']:
+                    item.unit_price_taxed = row['Đơn giá tính thuế']
+                if row['Tổng số lượng']:
+                    item.total = row['Tổng số lượng']
+                if row['Đơn vị tính']:
+                    item.unit = row['Đơn vị tính']
+                if row['Tổng số lượng 2']:
+                    item.total_2 = row['Tổng số lượng 2']
+                if row['Đơn vị tính 2']:
+                    item.unit_2 = row['Đơn vị tính 2']
+                if row['Trị giá NT']:
+                    item.nt_value = row['Trị giá NT']
+                if row['Tổng trị giá']:
+                    item.total_value = row['Tổng trị giá']
+                if row['Thuế suất XNK']:
+                    item.tax_rate = row['Thuế suất XNK']
+                if row['Tiền thuế XNK']:
+                    item.tax_cost = row['Tiền thuế XNK']
+                if row['Tên đối tác']:
+                    item.partner = row['Tên đối tác']
+                if row['Số hóa đơn']:
+                    item.bill = row['Số hóa đơn']
+                if row['Ngày hóa đơn']:
+                    item.bill_date = row['Ngày hóa đơn'].date()
+                if row['Số hợp đồng']:
+                    item.contract = row['Số hợp đồng']
                 if not pd.isnull(row['Ngày hợp đồng']):
                     item.contract_date = row['Ngày hợp đồng'].date()
                 item.save()
             messages.success(request, 'Data Imported')
             return redirect('list_ecus')
+        else:
+            messages.warning(request, '''Wrong format, make sure your file has at least these column ['Số TK', 'Ngày ĐK', 'Mã loại hình', 'STT hàng', 'Mã NPL/SP', 'Mã ERP', 'Mã HS', 'Tên hàng', 'Xuất xứ', 'Đơn giá', 'Đơn giá tính thuế', 'Tổng số lượng', 'Đơn vị tính',
+              'Tổng số lượng 2', 'Đơn vị tính 2', 'Trị giá NT', 'Tổng trị giá', 'Thuế suất XNK', 'Tiền thuế XNK', 'Tên đối tác', 'Số hóa đơn', 'Ngày hóa đơn', 'Số hợp đồng', 'Ngày hợp đồng']''')
+            return redirect('import_excel_ecus')
     return render(request, 'stocksmanagement/import_excel.html', {'title': 'Import as excel'})
 
 
@@ -276,7 +354,7 @@ def delete_items_ecus(request, pk):
     queryset = Ecus.objects.get(id=pk)
     if request.method == 'POST':
         queryset.delete()
-        return redirect('list_items_ecus')
+        return redirect('list_ecus')
     return render(request, 'stocksmanagement/confirm_delete_ecus.html', {'title': 'Confirm delete'})
 
 
@@ -293,12 +371,13 @@ def ecus_detail(request, pk):
 '''------------BOM------------'''
 
 
-class BOMListView(ListView):
+class BOMListView(LoginRequiredMixin, ListView):
     model = BOM
     template_name = 'stocksmanagement/list_bom.html'
     context_object_name = 'queryset'
     # ordering = ['-date_posted']
     paginate_by = 20
+    query_set = None
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -307,59 +386,23 @@ class BOMListView(ListView):
         return context
 
     def get_queryset(self):
-        query_set = BOM.objects.all().filter(client=self.request.user)
+        self.query_set = BOM.objects.all().filter(client=self.request.user)
         ecus_code = self.request.GET.get('ecus_code', '')
         tp_code = self.request.GET.get('tp_code', '')
         ecus = self.request.GET.get('ecus', '')
         if ecus_code:
-            query_set = query_set.filter(
+            self.query_set = self.query_set.filter(
                 ecus_code__icontains=ecus_code
             )
         if tp_code:
-            query_set = query_set.filter(
+            self.query_set = self.query_set.filter(
                 tp_code__icontains=tp_code
             )
         if ecus:
-            query_set = query_set.filter(
+            self.query_set = self.query_set.filter(
                 ecus__icontains=ecus
             )
-        return query_set
-
-
-@login_required
-def list_bom(request):
-    form = BOMSearchForm(request.POST or None)
-    client = request.user
-    title = 'List of BOM'
-    queryset = BOM.objects.all().filter(client=client)
-    paginator = Paginator(queryset, 25)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    context = {
-        "title": title,
-        "queryset": queryset,
-        "form": form,
-        "page_obj": page_obj
-    }
-
-    if request.method == 'POST':
-        queryset = queryset.filter(
-            tp_code__icontains=form['tp_code'].value(),
-            ecus_code__icontains=form['ecus_code'].value(),
-        ).filter(
-            ecus__icontains=form['ecus'].value(),
-        )
-        if form['export_to_CSV'].value() == True:
-            response = HttpResponse(content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="List of stock.csv"'
-            writer = csv.writer(response)
-            writer.writerow(['description', 'ITEM NAME', 'QUANTITY'])
-            for ecus in queryset:
-                writer.writerow(
-                    [ecus.tp_code, ecus.tp_code, ecus.tp_code])
-            return response
-        context['queryset'] = queryset
-    return render(request, "stocksmanagement/list_bom.html", context)
+        return self.query_set
 
 
 @login_required
@@ -398,32 +441,46 @@ def import_excel_bom(request):
         try:
             imported_data = pd.read_excel(
                 file_name.read(), sheet_name='BOM')
-        except ValueError:
+        except Exception:
             messages.warning(
-                request, 'Wrong format, make sure the sheet contain informations name BOM')
+                request, 'Wrong format, make sure the file you import is excel and the sheet contain informations name BOM')
             return render(request, 'stocksmanagement/import_excel.html')
         if check_bom_format(imported_data):
             imported_data = imported_data.iloc[1:, :]
             for _, row in imported_data.iterrows():
-                item = BOM(
-                    client=request.user,
-                    tp_code=row['Code TP'],
-                    ecus_code=row['Mã Ecus'],
-                    name=row['Tên'],
-                    rm_code=row['Decription'],
-                    description=row['Unit'],
-                    unit=row['RM.code'],
-                    ecus=row['Ecus code'],
-                    name_2=row['Name'],
-                    description_2=row['Decription.1'],
-                    unit_2=row['Unit.1'],
-                    bom=row['BOM'],
-                    loss=row['Loss'],
-                    finish_product=row['Thành phẩm xuất'],
-                    finish_product_convert=row['Quy đổi TP xuất'],
-                    finish_product_inventory=row['Thành phẩm tồn'],
-                    finish_product_exchange=row['Quy đổi thành phẩm tồn'],
-                )
+                item = BOM(client=request.user)
+                if row['Code TP']:
+                    item.tp_code = row['Code TP']
+                if row['Mã Ecus']:
+                    item.ecus_code = row['Mã Ecus']
+                if row['Tên']:
+                    item.name = row['Tên']
+                if row['Decription']:
+                    item.rm_code = row['Decription']
+                if row['Unit']:
+                    item.description = row['Unit']
+                if row['RM.code']:
+                    item.unit = row['RM.code']
+                if row['Ecus code']:
+                    item.ecus = row['Ecus code']
+                if row['Name']:
+                    item.name_2 = row['Name']
+                if row['Decription.1']:
+                    item.description_2 = row['Decription.1']
+                if row['Unit.1']:
+                    item.unit_2 = row['Unit.1']
+                if row['BOM']:
+                    item.bom = row['BOM']
+                if row['Loss']:
+                    item.loss = row['Loss']
+                if row['Thành phẩm xuất']:
+                    item.finish_product = row['Thành phẩm xuất']
+                if row['Quy đổi TP xuất']:
+                    item.finish_product_convert = row['Quy đổi TP xuất']
+                if row['Thành phẩm tồn']:
+                    item.finish_product_inventory = row['Thành phẩm tồn']
+                if row['Quy đổi thành phẩm tồn']:
+                    item.finish_product_exchange = row['Quy đổi thành phẩm tồn']
                 item.save()
             messages.success(request, 'Data Imported')
             return redirect('list_bom')
@@ -435,6 +492,7 @@ def import_excel_bom(request):
             'Thành phẩm xuất', 'Quy đổi TP xuất', 'Thành phẩm tồn',
             'Quy đổi thành phẩm tồn' 
             ''')
+            return redirect('import_excel_bom')
     return render(request, 'stocksmanagement/import_excel.html', {'title': 'Import as excel'})
 
 
@@ -477,33 +535,6 @@ def bom_detail(request, pk):
         "queryset": queryset,
     }
     return render(request, "stocksmanagement/bom_detail.html", context)
-
-
-@login_required
-def list_balance(request):
-    form = BalanceSearchForm(request.POST or None)
-    client = request.user
-    title = 'Balance'
-    queryset = Balance.objects.all().filter(client=client)
-    context = {
-        "title": title,
-        "queryset": queryset,
-        "form": form,
-    }
-
-    if request.method == 'POST':
-        queryset = queryset.filter(
-            ecus_code__icontains=form['ecus_code'].value(),
-            description__icontains=form['description'].value()
-        )
-        context = {
-            "title": title,
-            "form": form,
-            "queryset": queryset,
-        }
-        return render(request, "stocksmanagement/list_balance.html", context)
-
-    return render(request, "stocksmanagement/list_balance.html", context)
 
 
 class BalanceListView(ListView):

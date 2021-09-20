@@ -10,10 +10,10 @@
             <form method="post" action="">
                 {% csrf_token %}
                 <h1>Are you sure you want to delete?</h1><br>
-                <input class="btn btn-danger btn-sm col-sm-4" type="submit" value="Yes" />
+                <input class="btn btn-primary btn-sm col-sm-6" type="submit" value="Yes" />
                 <br>
                 <br>
-                <a href="{% url 'list_items_ecus' %}"><div class="btn btn-primary">Cancel</div></a>
+                <a class="btn btn-info btn-sm col-sm-6" href="{% url 'list_ecus' %}">Cancel</a>
             </form>
         </div>
       </div>

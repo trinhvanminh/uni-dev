@@ -17,7 +17,7 @@
     </div>
     <div class="row">
       <div class="col-md-2">
-            <form method='POST' action=''>{% csrf_token %}
+            <form method='GET' action=''>
               <div id="div_id_category" class="form-group"> 
                 <label for="id_category" class=" requiredField">
                 Category
@@ -45,14 +45,18 @@
                   <input type="text" name="item_name" maxlength="50" class="textinput textInput form-control" id="id_item_name"> 
                 </div> 
               </div>
-
               <div class="form-check">
                 <input type="checkbox" name="export_to_CSV" class="form-check-input" id="id_export_to_CSV">
                 <label class="form-check-label" for="id_export_to_CSV">Export to CSV</label>
               </div>
               <br>
-              <button type="submit" class="btn btn-primary">Submit</button>
+              <button type="submit" class="btn btn-primary">Search</button>
               </form>
+              <!-- <hr>
+              <form action="." method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">EXPORT CSV</button>
+              </form> -->
             <br>
         </div>
         <div class="col-md-10" style="overflow-x: scroll;">
@@ -138,61 +142,74 @@
                   <tr>
                     <td>{{forloop.counter}}</td>
                     <td>{{instance.description}}</td>
-                    <td><a href="{% url 'update_items' instance.id %}">{{instance.item_name}}</a></td>
-                    <td>{{instance.ecus_code}}</td>
+                    <td>{{instance.item_name}}</td>
+                    <td><a href="{% url 'update_items' instance.id %}">{{instance.ecus_code}}</a></td>
                     <td>{{instance.item_desciption}}</td>
-                    <td>{{instance.begin_quantity}}</td>
-                    <td>{{instance.begin_price}}</td>
-                    <td>{{instance.begin_price}}</td>
+                    
+                    <td>{{ instance.begin_quantity | floatformat:-2 }}</td>
+                    <td>{{ instance.get_beginning_amount | floatformat:-2 }}</td>
+                    <td>{{ instance.begin_price | floatformat:-2 }}</td>
 
-                    <td>{{instance.pr_purchase_quantity}}</td>
-                    <td>{{instance.pr_purchase_price}}</td>
-                    <td>{{instance.pr_purchase_price}}</td>
+                    <td>{{ instance.pr_purchase_quantity | floatformat:-2 }}</td>
+                    <td>{{ instance.get_pr_purchase_amount | floatformat:-2 }}</td>
+                    <td>{{ instance.pr_purchase_price | floatformat:-2 }}</td>
 
-                    <td>{{instance.mr_production_quantity}}</td>
-                    <td>{{instance.mr_production_price}}</td>
-                    <td>{{instance.mr_production_price}}</td>
+                    <td>{{ instance.mr_production_quantity | floatformat:-2 }}</td>
+                    <td>{{ instance.get_mr_production_amount | floatformat:-2 }}</td>
+                    <td>{{ instance.mr_production_price | floatformat:-2 }}</td>
 
-                    <td>{{instance.or_unplanned_quantity}}</td>
-                    <td>{{instance.or_unplanned_price}}</td>
-                    <td>{{instance.or_unplanned_price}}</td>
+                    <td>{{ instance.or_unplanned_quantity | floatformat:-2 }}</td>
+                    <td>{{ instance.get_or_unplanned_amount | floatformat:-2 }}</td>
+                    <td>{{ instance.or_unplanned_price | floatformat:-2 }}</td>
 
-                    <td>{{instance.stock_transfer_quantity}}</td>
-                    <td>{{instance.stock_transfer_price}}</td>
-                    <td>{{instance.description}}</td>
+                    <td>{{ instance.stock_transfer_quantity | floatformat:-2 }}</td>
+                    <td>{{ instance.get_stock_transfer_amount | floatformat:-2 }}</td>
+                    <td>{{ instance.stock_transfer_price | floatformat:-2 }}</td>
 
-                    <td>{{instance.pi_issue_production_quantity}}</td>
-                    <td>{{instance.pi_issue_production_price}}</td>
-                    <td>{{instance.description}}</td>
+                    <td>{{ instance.pi_issue_production_quantity | floatformat:-2 }}</td>
+                    <td>{{ instance.get_pi_issue_production_amount | floatformat:-2 }}</td>
+                    <td>{{ instance.pi_issue_production_price | floatformat:-2 }}</td>
 
-                    <td>{{instance.di_sale_issue_quantity}}</td>
-                    <td>{{instance.di_sale_issue_price}}</td>
-                    <td>{{instance.description}}</td>
+                    <td>{{ instance.di_sale_issue_quantity | floatformat:-2 }}</td>
+                    <td>{{ instance.get_di_sale_issue_amount | floatformat:-2 }}</td>
+                    <td>{{ instance.di_sale_issue_price | floatformat:-2 }}</td>
 
-                    <td>{{instance.oi_unplanned_issue_quantity}}</td>
-                    <td>{{instance.oi_unplanned_issue_price}}</td>
-                    <td>{{instance.description}}</td>
+                    <td>{{ instance.oi_unplanned_issue_quantity | floatformat:-2 }}</td>
+                    <td>{{ instance.get_oi_unplanned_issue_amount | floatformat:-2 }}</td>
+                    <td>{{ instance.oi_unplanned_issue_price | floatformat:-2 }}</td>
 
-                    <td>{{instance.stock_transfer_issue_quantity}}</td>
-                    <td>{{instance.stock_transfer_issue_price}}</td>
-                    <td>{{instance.description}}</td>
-                    <!-- <td><a href="{% url 'delete_items' instance.id %}">Delete</a></td>
-                    <td><a href="{% url 'stock_detail' instance.id %}">{{instance.quantity}}</a></td> -->
+                    <td>{{ instance.stock_transfer_issue_quantity | floatformat:-2 }}</td>
+                    <td>{{ instance.get_stock_transfer_amount | floatformat:-2 }}</td>
+                    <td>{{ instance.stock_transfer_issue_price | floatformat:-2 }}</td>
+                    <td>
+                      <a href="{% url 'delete_items' instance.id %}">Delete</a>
+                      <a href="{% url 'stock_detail' instance.id %}">Detail</a>
+                    </td>
                   </tr>
               {% endfor %}
             </tbody>
+            {% if is_paginated %}
+            {% if page_obj.has_previous %}
+                <a class="btn btn-light mb-4" href="?page=1{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}">First</a>
+                <a class="btn btn-light mb-4" href="?page={{ page_obj.previous_page_number }}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}">Previous</a>
+              {% endif %}
+
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <a class="btn btn-light mb-4" href="?page={{ num }}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}">{{ num }}</a>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <a class="btn btn-light mb-4" href="?page={{ num }}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}">{{ num }}</a>
+                {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+                <a class="btn btn-light mb-4" href="?page={{ page_obj.next_page_number }}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}">Next</a>
+                <a class="btn btn-light mb-4" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}">Last</a>
+            {% endif %}
+            {% endif %}
           </table>
         </div>
       </div>
     </div>
 </section>
 {% endblock content %}
-
-{% block extra_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/jquery.ui.widget@1.10.3/jquery.ui.widget.js"></script>
-<script src="{% static 'js/paging.js' %}"></script>
-<script src="{% static 'js/nprogress.js' %}"></script>
-<script src="https://cdn.datatables.net/1.11.2/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.2/js/dataTables.bootstrap4.min.js"></script>
-<script src="{% static 'js/custom_paging.js' %}"></script>
-{% endblock extra_scripts %}

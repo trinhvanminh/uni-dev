@@ -17,9 +17,7 @@
     </div>
     <div class="row">
       <div class="col-md-2">
-            <form method='POST'>
-              {% csrf_token %}
-              <!-- {{ form | crispy }} -->
+            <form method='GET'>
               <div id="div_id_type_code" class="form-group"> 
                 <label for="id_type_code" class="">
                   Type code
@@ -37,11 +35,10 @@
                   <input type="text" name="from_country" maxlength="50" class="textinput textInput form-control" id="id_from_country"> 
                 </div> 
               </div>
-
-              <div class="form-check">
+              <!-- <div class="form-check">
                 <input type="checkbox" name="export_to_CSV" class="form-check-input" id="id_export_to_CSV">
                 <label class="form-check-label" for="id_export_to_CSV">Export to CSV</label>
-              </div>
+              </div> -->
               <br>
               <button type="submit" class="btn btn-primary">Submit</button>
               </form>
@@ -82,30 +79,30 @@
             <tbody>
               {% for instance in queryset %}
                   <tr>
-                    <td>{{forloop.counter}}</td>
-                    <td>{{instance.account_number}}</td>
-                    <td>{{instance.registered_date}}</td>
-                    <td>{{instance.type_code}}</td>
-                    <td>{{instance.goods_no}}</td>
-                    <td>{{instance.npl_sp_code}}</td>
-                    <td>{{instance.erp_code}}</td>
-                    <td>{{instance.hs}}</td>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ instance.account_number }}</td>
+                    <td>{{ instance.registered_date }}</td>
+                    <td>{{ instance.type_code }}</td>
+                    <td>{{ instance.goods_no }}</td>
+                    <td>{{ instance.npl_sp_code }}</td>
+                    <td>{{ instance.erp_code }}</td>
+                    <td>{{ instance.hs }}</td>
 
                     <td><a href="{% url 'update_ecus' instance.id %}">{{instance.item_name}}</a></td>
-                    <td>{{instance.from_country}}</td>
-                    <td>{{instance.unit_price}}</td>
+                    <td>{{ instance.from_country }}</td>
+                    <td>{{ instance.unit_price | floatformat:-2 }}</td>
 
-                    <td>{{instance.unit_price_taxed}}</td>
-                    <td>{{instance.total}}</td>
-                    <td>{{instance.unit}}</td>
+                    <td>{{ instance.unit_price_taxed | floatformat:-2 }}</td>
+                    <td>{{ instance.total | floatformat:-2 }}</td>
+                    <td>{{ instance.unit }}</td>
 
-                    <td>{{instance.total_2}}</td>
-                    <td>{{instance.unit_2}}</td>
-                    <td>{{instance.nt_value}}</td>
+                    <td>{{ instance.total_2 | floatformat:-2 }}</td>
+                    <td>{{ instance.unit_2}}</td>
+                    <td>{{ instance.nt_value | floatformat:-2 }}</td>
 
-                    <td>{{instance.total_value}}</td>
-                    <td>{{instance.tax_rate}}</td>
-                    <td>{{instance.tax_cost}}</td>
+                    <td>{{ instance.total_value | floatformat:-2 }}</td>
+                    <td>{{ instance.tax_rate | floatformat:-3 }}</td>
+                    <td>{{ instance.tax_cost | floatformat:-2 }}</td>
 
                     <td>{{instance.partner}}</td>
                     <td>{{instance.bill}}</td>
@@ -113,23 +110,35 @@
 
                     <td>{{instance.contract}}</td>
                     <td>{{instance.contract_date}}</td>
-                    <!-- <td><a href="{% url 'delete_items' instance.id %}">Delete</a></td>
-                    <td><a href="{% url 'stock_detail' instance.id %}">{{instance.quantity}}</a></td> -->
+                    <td>
+                      <a href="{% url 'delete_items_ecus' instance.id %}">Delete</a>
+                      <a href="{% url 'ecus_detail' instance.id %}">Detail</a>
+                    </td>
                   </tr>
               {% endfor %}
             </tbody>
+            {% if is_paginated %}
+            {% if page_obj.has_previous %}
+                <a class="btn btn-light mb-4" href="?page=1{% if request.GET.type_code %}&type_code={{ request.GET.type_code }}{% endif %}{% if request.GET.from_country %}&from_country={{ request.GET.from_country }}{% endif %}">First</a>
+                <a class="btn btn-light mb-4" href="?page={{ page_obj.previous_page_number }}{% if request.GET.type_code %}&type_code={{ request.GET.type_code }}{% endif %}{% if request.GET.from_country %}&from_country={{ request.GET.from_country }}{% endif %}">Previous</a>
+              {% endif %}
+
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <a class="btn btn-light mb-4" href="?page={{ num }}{% if request.GET.type_code %}&type_code={{ request.GET.type_code }}{% endif %}{% if request.GET.from_country %}&from_country={{ request.GET.from_country }}{% endif %}">{{ num }}</a>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <a class="btn btn-light mb-4" href="?page={{ num }}{% if request.GET.type_code %}&type_code={{ request.GET.type_code }}{% endif %}{% if request.GET.from_country %}&from_country={{ request.GET.from_country }}{% endif %}">{{ num }}</a>
+                {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+                <a class="btn btn-light mb-4" href="?page={{ page_obj.next_page_number }}{% if request.GET.type_code %}&type_code={{ request.GET.type_code }}{% endif %}{% if request.GET.from_country %}&from_country={{ request.GET.from_country }}{% endif %}">Next</a>
+                <a class="btn btn-light mb-4" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.type_code %}&type_code={{ request.GET.type_code }}{% endif %}{% if request.GET.from_country %}&from_country={{ request.GET.from_country }}{% endif %}">Last</a>
+            {% endif %}
+            {% endif %}
           </table>
         </div>
       </div>
     </div>
 </section>
 {% endblock content %}
-
-{% block extra_scripts %}
-<script src="https://cdn.jsdelivr.net/npm/jquery.ui.widget@1.10.3/jquery.ui.widget.js"></script>
-<script src="{% static 'js/paging.js' %}"></script>
-<script src="{% static 'js/nprogress.js' %}"></script>
-<script src="https://cdn.datatables.net/1.11.2/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.2/js/dataTables.bootstrap4.min.js"></script>
-<script src="{% static 'js/custom_paging.js' %}"></script>
-{% endblock extra_scripts %}
