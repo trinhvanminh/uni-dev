@@ -9,42 +9,47 @@
 {% endblock %}
 
 {% block content %}
-<section class="" style="padding-top: 40px; padding-bottom: 50px;">    
-  <div class="container">
-    <div class="col-md-4 offset-9 pb-5" style="padding-left: 60px;">
-      <a class="btn btn-primary" href="{% url 'add_items_ecus' %}">Add Item</a>
-      <a class="btn btn-info" href="{% url 'import_excel_ecus' %}">Import Excel</a>
-    </div>
-    <div class="row">
-      <div class="col-md-2">
-            <form method='GET'>
-              <div id="div_id_type_code" class="form-group"> 
-                <label for="id_type_code" class="">
-                  Type code
-                </label> 
-                <div class=""> 
-                  <input type="text" name="type_code" maxlength="50" class="textinput textInput form-control" id="id_type_code"> 
-                </div> 
-              </div>
 
-              <div id="div_id_from_country" class="form-group"> 
-                <label for="id_from_country" class="">
-                  Country
-                </label> 
-                <div class=""> 
-                  <input type="text" name="from_country" maxlength="50" class="textinput textInput form-control" id="id_from_country"> 
-                </div> 
-              </div>
-              <!-- <div class="form-check">
-                <input type="checkbox" name="export_to_CSV" class="form-check-input" id="id_export_to_CSV">
-                <label class="form-check-label" for="id_export_to_CSV">Export to CSV</label>
-              </div> -->
-              <br>
-              <button type="submit" class="btn btn-primary">Submit</button>
-              </form>
-            <br>
+<div class="container">
+  <div class="row">
+    <div class="col-md-8">
+      <form class="form-inline pt-5">
+        <div class="form-group mb-2">
+          <label for="id_type_code" class="">
+            Type code &#160;
+          </label> 
+          <div class=""> 
+            <input type="text" name="type_code" maxlength="50" class="textinput textInput form-control" id="id_type_code"> 
+          </div> 
         </div>
-        <div class="col-md-10" style="overflow-x: scroll;">
+        <div class="form-group mx-sm-3 mb-2">
+          <label for="id_from_country" class="">
+            Country &#160;
+          </label> 
+          <div class=""> 
+            <input type="text" name="from_country" maxlength="50" class="textinput textInput form-control" id="id_from_country"> 
+          </div>
+        </div>
+          <!-- <div class="form-group mx-sm-3 mb-2">
+            <input type="checkbox" name="export_to_CSV" class="form-check-input" id="id_export_to_CSV">
+            <label class="form-check-label" for="id_export_to_CSV">Export to CSV</label>
+          </div> -->
+        <button type="submit" class="form-group">Search</button>
+        </form>
+      </div>
+      <div class="form-inline" style="padding-left: 150px; padding-top: 40px;">
+          <a class="btn btn-primary form-group" href="{% url 'add_items_ecus' %}">Add Item</a>
+          <a class="btn btn-info form-group" href="{% url 'import_excel_ecus' %}">Import Excel</a>
+      </div>
+  </div>
+</div>
+
+
+<section class="" style="padding-top: 20px; padding-bottom: 50px;">    
+  <div class="container">
+    <div class="row">
+        <div class="col-md-12" style="overflow-x: scroll;">
+          {% if queryset.all %}
           <table id="itemTable" class="table table-hover table align-middle">
             <caption>List of items</caption>
             <thead>
@@ -125,7 +130,7 @@
 
               {% for num in page_obj.paginator.page_range %}
                 {% if page_obj.number == num %}
-                  <a class="btn btn-light mb-4" href="?page={{ num }}{% if request.GET.type_code %}&type_code={{ request.GET.type_code }}{% endif %}{% if request.GET.from_country %}&from_country={{ request.GET.from_country }}{% endif %}">{{ num }}</a>
+                  <a class="btn btn-info mb-4" href="?page={{ num }}{% if request.GET.type_code %}&type_code={{ request.GET.type_code }}{% endif %}{% if request.GET.from_country %}&from_country={{ request.GET.from_country }}{% endif %}">{{ num }}</a>
                 {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
                   <a class="btn btn-light mb-4" href="?page={{ num }}{% if request.GET.type_code %}&type_code={{ request.GET.type_code }}{% endif %}{% if request.GET.from_country %}&from_country={{ request.GET.from_country }}{% endif %}">{{ num }}</a>
                 {% endif %}
@@ -137,6 +142,9 @@
             {% endif %}
             {% endif %}
           </table>
+          {% else %}
+          <h2>No items to be showed</h2>
+          {% endif %}
         </div>
       </div>
     </div>

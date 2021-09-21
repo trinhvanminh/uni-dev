@@ -1,4 +1,5 @@
 from django.db.models import query
+from django.utils.datastructures import MultiValueDictKeyError
 from client.models import Client
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -122,7 +123,11 @@ def check_format(df):
 @login_required
 def import_excel(request):
     if request.method == 'POST':
-        file_name = request.FILES['myfile']
+        try:
+            file_name = request.FILES['myfile']
+        except MultiValueDictKeyError:
+            messages.warning(request, 'Please choose your file')
+            return redirect('import_excel')
         try:
             imported_data = pd.read_excel(
                 file_name.read(), header=10, sheet_name='IOB')
@@ -264,7 +269,11 @@ def check_ecus_format(df):
 @login_required
 def import_excel_ecus(request):
     if request.method == 'POST':
-        file_name = request.FILES['myfile']
+        try:
+            file_name = request.FILES['myfile']
+        except MultiValueDictKeyError:
+            messages.warning(request, 'Please choose your file')
+            return redirect('import_excel_ecus')
         try:
             imported_data = pd.read_excel(
                 file_name.read(), sheet_name='Ecus')
@@ -437,7 +446,11 @@ def check_bom_format(df):
 @login_required
 def import_excel_bom(request):
     if request.method == 'POST':
-        file_name = request.FILES['myfile']
+        try:
+            file_name = request.FILES['myfile']
+        except MultiValueDictKeyError:
+            messages.warning(request, 'Please choose your file')
+            return redirect('import_excel_bom')
         try:
             imported_data = pd.read_excel(
                 file_name.read(), sheet_name='BOM')
