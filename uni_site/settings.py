@@ -35,8 +35,8 @@ INSTALLED_APPS = [
 
     # third-party apps
     'crispy_forms',
+    'import_export',
 
-    # all-auth
     # all-auth
     'client',
     'django.contrib.sites',
@@ -172,5 +172,10 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
+
+
+# DJANGO-IMPORT-EXPORT
+
+IMPORT_EXPORT_USE_TRANSACTIONS = True
 
 django_heroku.settings(locals())

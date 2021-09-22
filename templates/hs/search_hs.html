@@ -1,0 +1,64 @@
+{% extends '../base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block extra_head %}
+<link href="{% static 'css/nprogress.css' %}" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.11.2/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<section class="" style="padding-top: 70px; padding-bottom: 70px;">    
+  <div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-2">
+          {% if queryset.all %}
+          <table id="itemTable" class="table table-bordered">
+            <caption>List of items</caption>
+            <thead>
+            <tr>
+                <th>NO</th>
+                <th>HS</th>
+                <th>PRODUCT</th>
+            </tr>
+            </thead>
+            <tbody>
+              {% for instance in queryset %}
+                  <tr>
+                    <td>{{ forloop.counter }}</td>
+                    {% if instance.subheading %}
+                    <td>{{ instance.subheading }}</td>
+                    {% else %}
+                    <td>{{ instance.heading }}</td>
+                    {% endif %}
+                    <td>{{ instance.name }}</td>
+                  </tr>
+              {% endfor %}
+            </tbody>
+              {% if page_obj.has_previous %}
+                <a class="btn btn-light mb-4" href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">First</a>
+                <a class="btn btn-light mb-4" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Previous</a>
+              {% endif %}
+
+              {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                  <a class="btn btn-dark mb-4" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                  <a class="btn btn-light mb-4" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">{{ num }}</a>
+                {% endif %}
+              {% endfor %}
+
+              {% if page_obj.has_next %}
+                <a class="btn btn-light mb-4" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next</a>
+                <a class="btn btn-light mb-4" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Last</a>
+              {% endif %}
+          </table>
+          {% else %}
+          <h2>No items to be showed</h2>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+</section>
+{% endblock content %}
