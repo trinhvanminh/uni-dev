@@ -46,7 +46,7 @@ class Note(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=150, blank=True, null=True)
+    name = models.TextField(blank=True, null=True)
     heading = models.ForeignKey(
         Heading, on_delete=models.CASCADE, blank=True, null=True
     )
