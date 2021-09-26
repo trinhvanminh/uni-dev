@@ -1,4 +1,6 @@
+from hscode.views import export
 from django.db.models import query
+from django.utils.datastructures import MultiValueDictKeyError
 from client.models import Client
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -49,6 +51,42 @@ class IOBListView(LoginRequiredMixin, ListView):
                 writer.writerow(
                     [stock.description, stock.item_name])
         return self.query_set
+
+
+class SavedSamplesCsvView(IOBListView):
+    """
+    Subclass of above view, to produce a csv file
+    """
+    paginate_by = None
+    template_name = 'stocksmanagement/stock.csv'
+    content_type = 'text/csv'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['Content-Disposition'] = 'attachment; filename="List of stock.csv"'
+        return context
+
+
+def export_csv(request):
+    query_set = Stock.objects.all().filter(client=request.user)
+    description = request.GET.get('description', '')
+    item_name = request.GET.get('item_name', '')
+    if description:
+        query_set = query_set.filter(
+            description__icontains=description
+        )
+    if item_name:
+        query_set = query_set.filter(
+            item_name__icontains=item_name
+        )
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="List of stock.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['description', 'ITEM NAME'])
+    for stock in query_set:
+        writer.writerow(
+            [stock.description, stock.item_name])
+    return response
 
 
 @login_required
@@ -122,7 +160,11 @@ def check_format(df):
 @login_required
 def import_excel(request):
     if request.method == 'POST':
-        file_name = request.FILES['myfile']
+        try:
+            file_name = request.FILES['myfile']
+        except MultiValueDictKeyError:
+            messages.warning(request, 'Please choose your file')
+            return redirect('import_excel')
         try:
             imported_data = pd.read_excel(
                 file_name.read(), header=10, sheet_name='IOB')
@@ -264,7 +306,11 @@ def check_ecus_format(df):
 @login_required
 def import_excel_ecus(request):
     if request.method == 'POST':
-        file_name = request.FILES['myfile']
+        try:
+            file_name = request.FILES['myfile']
+        except MultiValueDictKeyError:
+            messages.warning(request, 'Please choose your file')
+            return redirect('import_excel_ecus')
         try:
             imported_data = pd.read_excel(
                 file_name.read(), sheet_name='Ecus')
@@ -437,7 +483,11 @@ def check_bom_format(df):
 @login_required
 def import_excel_bom(request):
     if request.method == 'POST':
-        file_name = request.FILES['myfile']
+        try:
+            file_name = request.FILES['myfile']
+        except MultiValueDictKeyError:
+            messages.warning(request, 'Please choose your file')
+            return redirect('import_excel_bom')
         try:
             imported_data = pd.read_excel(
                 file_name.read(), sheet_name='BOM')

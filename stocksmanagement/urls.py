@@ -3,7 +3,7 @@ from .views import (
     delete_items, delete_items, add_items, update_items, stock_detail, import_excel, IOBListView,
     EcusListView, update_ecus, import_excel_ecus, add_items_ecus, delete_items_ecus, ecus_detail,
     update_bom, import_excel_bom, add_items_bom, delete_items_bom, bom_detail, BOMListView,
-    BalanceListView
+    BalanceListView, SavedSamplesCsvView, export_csv
 )
 
 urlpatterns = [
@@ -30,4 +30,6 @@ urlpatterns = [
     path('delete-items-bom/<str:pk>/', delete_items_bom, name="delete_items_bom"),
 
     path('balance/', BalanceListView.as_view(), name="list_balance"),
+    path('save-csv/',
+         export_csv,  name='saved_samples_csv'),
 ]

@@ -8,9 +8,9 @@
           <div class="close-btn"><i class="icon-close"></i></div>
           <div class="row d-flex justify-content-center">
             <div class="col-md-8">
-              <form action="#">
+              <form action="{% url 'search_hs' %}">
                 <div class="form-group">
-                  <input type="search" name="search" id="search" placeholder="What are you looking for?">
+                  <input name="q" id="search" placeholder="What are you looking for?">
                   <button type="submit" class="submit"><i class="icon-search-1"></i></button>
                 </div>
               </form>
@@ -28,16 +28,23 @@
         <!-- Navbar Menu -->
         <div id="navbarcollapse" class="collapse navbar-collapse">
           <ul class="navbar-nav ml-auto">
-            <li class="nav-item"><a href="{% url 'home' %}" class="nav-link active ">Home</a>
-            </li>
             {% if request.user.is_authenticated %}
-            <li class="nav-item"><a href="{% url 'profile' %}" class="nav-link ">Profile</a></li>
+            <div class="dropdown">
+              <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Your Stock
+              </button>
+              <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="{% url 'list_items' %}">IOB</a>
+                <a class="dropdown-item" href="{% url 'list_ecus' %}">ECUS</a>
+                <a class="dropdown-item" href="{% url 'list_bom' %}">BOM</a>
+                <hr>
+                <a class="dropdown-item" href="{% url 'list_balance' %}">BALANCE</a>
+              </div>
+            </div>
             <li class="nav-item"><a href="{% url 'account_logout' %}" class="nav-link ">Logout</a></li>
             {% else %}
             <li class="nav-item"><a href="{% url 'account_login' %}" class="nav-link ">login</a></li>
             {% endif %}
-            <li class="nav-item"><a href="#" class="nav-link ">Contact</a>
-            </li>
           </ul>
           <div class="navbar-text"><a href="#" class="search-btn"><i class="icon-search-1"></i></a></div>
         </div>
