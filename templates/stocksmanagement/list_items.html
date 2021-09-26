@@ -194,7 +194,7 @@
                 <a class="btn btn-light mb-4" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}">Last</a>
             {% endif %}
             {% endif %}
-            <a class="btn btn-info" href="../save-csv/?{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}" style="margin-bottom: 24px; float: right;">EXPORT</a>
+            <a class="btn btn-info" href="{% url 'export_csv_iob' %}?{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}" style="margin-bottom: 24px; float: right;">EXPORT CSV</a>
           </table>
           {% else %}
           <h2>No items to be showed</h2>

@@ -105,6 +105,7 @@
                 <a class="btn btn-light mb-4" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}">Last</a>
               {% endif %}
             {% endif %}
+            <a class="btn btn-info" href="{% url 'export_csv_balance' %}?{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}" style="margin-bottom: 24px; float: right;">EXPORT CSV</a>
           </table>
         </div>
       </div>

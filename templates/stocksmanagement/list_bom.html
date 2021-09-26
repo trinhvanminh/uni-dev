@@ -93,7 +93,6 @@
                     <td>{{ instance.finish_product_inventory | floatformat:-2 }}</td>
                     <td>{{ instance.finish_product_exchange | floatformat:-2 }}</td>
                     <td>
-                      <a href="{% url 'delete_items_bom' instance.id %}">Delete</a>
                       <a href="{% url 'bom_detail' instance.id %}">Detail</a>
                     </td>
                   </tr>
@@ -116,6 +115,7 @@
                 <a class="btn btn-light mb-4" href="?page={{ page_obj.next_page_number }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.tp_code %}&tp_code={{ request.GET.tp_code }}{% endif %}{% if request.GET.ecus %}&ecus={{ request.GET.ecus }}{% endif %}">Next</a>
                 <a class="btn btn-light mb-4" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.tp_code %}&tp_code={{ request.GET.tp_code }}{% endif %}{% if request.GET.ecus %}&ecus={{ request.GET.ecus }}{% endif %}">Last</a>
               {% endif %}
+              <a class="btn btn-info" href="{% url 'export_csv_bom' %}?{% if request.GET.ecus_code %}&ecus_code={{ request.GET.ecus_code }}{% endif %}{% if request.GET.tp_code %}&tp_code={{ request.GET.tp_code }}{% endif %}{% if request.GET.ecus %}&ecus={{ request.GET.ecus }}{% endif %}" style="margin-bottom: 24px; float: right;">EXPORT CSV</a>
           </table>
           {% else %}
           <h2>No items to be showed</h2>
