@@ -1,16 +1,15 @@
-from typing import List
-from django.shortcuts import render, redirect
-from django.views.generic import View, ListView
-from numpy import product
-from marketing.models import Signup
-from django.contrib import messages
-from django.http import HttpResponse
-from .admin import ProductResource
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.utils.datastructures import MultiValueDictKeyError
 import pandas as pd
-from .models import Heading, SubHeading, Product
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.utils.datastructures import MultiValueDictKeyError
+from django.views.generic import ListView, View
+from marketing.models import Signup
+
+from .admin import ProductResource
+from .models import Heading, Product, SubHeading
 
 
 class AdminStaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):

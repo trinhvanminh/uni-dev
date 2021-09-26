@@ -32,10 +32,6 @@
               <input type="text" name="item_name" maxlength="50" class="textinput textInput form-control" id="id_item_name"> 
             </div>
         </div>
-          <!-- <div class="form-group mx-sm-3 mb-2">
-            <input type="checkbox" name="export_to_CSV" class="form-check-input" id="id_export_to_CSV">
-            <label class="form-check-label" for="id_export_to_CSV">Export to CSV</label>
-          </div> -->
         <button type="submit" class="form-group">Search</button>
         </form>
       </div>
@@ -198,6 +194,7 @@
                 <a class="btn btn-light mb-4" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}">Last</a>
             {% endif %}
             {% endif %}
+            <a class="btn btn-info" href="{% url 'export_csv_iob' %}?{% if request.GET.description %}&description={{ request.GET.description }}{% endif %}{% if request.GET.item_name %}&item_name={{ request.GET.item_name }}{% endif %}" style="margin-bottom: 24px; float: right;">EXPORT CSV</a>
           </table>
           {% else %}
           <h2>No items to be showed</h2>

@@ -1,3 +1,4 @@
+from hscode.views import export
 from django.db.models import query
 from django.utils.datastructures import MultiValueDictKeyError
 from client.models import Client
@@ -50,6 +51,83 @@ class IOBListView(LoginRequiredMixin, ListView):
                 writer.writerow(
                     [stock.description, stock.item_name])
         return self.query_set
+
+
+class SavedSamplesCsvView(IOBListView):
+    """
+    Subclass of above view, to produce a csv file
+    """
+    paginate_by = None
+    template_name = 'stocksmanagement/stock.csv'
+    content_type = 'text/csv'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['Content-Disposition'] = 'attachment; filename="List of stock.csv"'
+        return context
+
+
+@login_required
+def export_csv_iob(request):
+    query_set = Stock.objects.all().filter(client=request.user)
+    description = request.GET.get('description', '')
+    item_name = request.GET.get('item_name', '')
+    content_disposition = 'attachment; filename="List of stock'
+    if description:
+        query_set = query_set.filter(
+            description__icontains=description
+        )
+        content_disposition += f' - {description}'
+    if item_name:
+        query_set = query_set.filter(
+            item_name__icontains=item_name
+        )
+        content_disposition += f' - {item_name}'
+    content_disposition += '.csv"'
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = content_disposition
+    writer = csv.writer(response)
+    writer.writerow(['', ' ', ' ', ' ', ' Beginning Inventory', ' ', ' ', ' PR Purchase Receipt', ' ', ' ', ' MR Production Receipt', ' ', ' ', ' OR Unplanned Receipt', ' ', ' ', ' Stock Transfer Receipt',
+                    ' ', ' ', ' PI Issue for production', ' ', ' ', ' DI Sales Issue', ' ', ' ', ' OI Unplanned Issue', ' ', ' ', ' Stock Transfer Issue', ' ', ' '])
+    writer.writerow(['Item Acount Description', ' Item', ' Ecus', ' Item Description', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price',
+                    ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price'])
+    for stock in query_set:
+        writer.writerow(
+            [
+                stock.description,
+                stock.item_name,
+                stock.ecus_code,
+                stock.item_desciption,
+                stock.begin_quantity,
+                stock.get_beginning_amount(),
+                stock.begin_price,
+                stock.pr_purchase_quantity,
+                stock.get_pr_purchase_amount(),
+                stock.pr_purchase_price,
+                stock.mr_production_quantity,
+                stock.get_mr_production_amount(),
+                stock.mr_production_price,
+                stock.or_unplanned_quantity,
+                stock.get_or_unplanned_amount(),
+                stock.or_unplanned_price,
+                stock.stock_transfer_quantity,
+                stock.get_stock_transfer_amount(),
+                stock.stock_transfer_price,
+                stock.pi_issue_production_quantity,
+                stock.get_pi_issue_production_amount(),
+                stock.pi_issue_production_price,
+                stock.di_sale_issue_quantity,
+                stock.get_di_sale_issue_amount(),
+                stock.di_sale_issue_price,
+                stock.oi_unplanned_issue_quantity,
+                stock.get_oi_unplanned_issue_amount(),
+                stock.oi_unplanned_issue_price,
+                stock.stock_transfer_issue_quantity,
+                stock.get_stock_transfer_amount(),
+                stock.stock_transfer_issue_price,
+            ]
+        )
+    return response
 
 
 @login_required
@@ -239,6 +317,84 @@ class EcusListView(LoginRequiredMixin, ListView):
 
 
 @login_required
+def export_csv_ecus(request):
+    query_set = Ecus.objects.all().filter(client=request.user)
+    type_code = request.GET.get('type_code', '')
+    from_country = request.GET.get('from_country', '')
+    content_disposition = 'attachment; filename="Ecus'
+    if type_code:
+        query_set = query_set.filter(
+            type_code__icontains=type_code
+        )
+        content_disposition += f' - {type_code}'
+    if from_country:
+        query_set = query_set.filter(
+            from_country__icontains=from_country
+        )
+        content_disposition += f' - {from_country}'
+    content_disposition += '.csv"'
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = content_disposition
+    writer = csv.writer(response)
+    writer.writerow([
+                    'Account Number',
+                    'Registered Date',
+                    'Type Code',
+                    'Goods No',
+                    'NPL/SP Code',
+                    'ERP Code',
+                    'HS',
+                    'Item Name',
+                    'Country',
+                    'Unit Price',
+                    'Taxed Price',
+                    'Total',
+                    'Unit',
+                    'Total 2',
+                    'Unit 2',
+                    'NT value',
+                    'Total value',
+                    'Tax rate',
+                    'Tax cost',
+                    'Partner',
+                    'Bill',
+                    'Bill date',
+                    'Contract',
+                    'Contract date'
+                    ])
+    for stock in query_set:
+        writer.writerow(
+            [
+                stock.account_number,
+                stock.registered_date,
+                stock.type_code,
+                stock.goods_no,
+                stock.npl_sp_code,
+                stock.erp_code,
+                stock.hs,
+                stock.item_name,
+                stock.from_country,
+                stock.unit_price,
+                stock.unit_price_taxed,
+                stock.total,
+                stock.unit,
+                stock.total_2,
+                stock.unit_2,
+                stock.nt_value,
+                stock.total_value,
+                stock.tax_rate,
+                stock.tax_cost,
+                stock.partner,
+                stock.bill,
+                stock.bill_date,
+                stock.contract,
+                stock.contract_date
+            ]
+        )
+    return response
+
+
+@login_required
 def update_ecus(request, pk):
     queryset = Ecus.objects.get(id=pk)
     form = EcusUpdateForm(instance=queryset)
@@ -415,6 +571,68 @@ class BOMListView(LoginRequiredMixin, ListView):
 
 
 @login_required
+def export_csv_bom(request):
+    query_set = BOM.objects.all().filter(client=request.user)
+    ecus_code = request.GET.get('ecus_code', '')
+    tp_code = request.GET.get('tp_code', '')
+    content_disposition = 'attachment; filename="BOM'
+    if ecus_code:
+        query_set = query_set.filter(
+            ecus_code__icontains=ecus_code
+        )
+        content_disposition += f' - {ecus_code}'
+    if tp_code:
+        query_set = query_set.filter(
+            tp_code__icontains=tp_code
+        )
+        content_disposition += f' - {tp_code}'
+    content_disposition += '.csv"'
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = content_disposition
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            'Code TP',
+            'Ecus Code',
+            'Name',
+            'Decription',
+            'Unit',
+            'Ecus',
+            'Name 2',
+            'Decription',
+            'Unit',
+            'BOM',
+            'Loss',
+            'Thành phẩm xuất',
+            'Quy đổi TP xuất',
+            'Thành phẩm tồn',
+            'Quy đổi thành phẩm tồn'
+        ]
+    )
+    for stock in query_set:
+        writer.writerow(
+            [
+                stock.tp_code,
+                stock.ecus_code,
+                stock.name,
+                stock.description,
+                stock.unit,
+                stock.ecus,
+                stock.name_2,
+                stock.description_2,
+                stock.unit_2,
+                stock.bom,
+                stock.loss,
+                stock.finish_product,
+                stock.finish_product_convert,
+                stock.finish_product_inventory,
+                stock.finish_product_exchange
+            ]
+        )
+    return response
+
+
+@login_required
 def update_bom(request, pk):
     queryset = BOM.objects.get(id=pk)
     form = BOMUpdateForm(instance=queryset)
@@ -550,7 +768,7 @@ def bom_detail(request, pk):
     return render(request, "stocksmanagement/bom_detail.html", context)
 
 
-class BalanceListView(ListView):
+class BalanceListView(LoginRequiredMixin, ListView):
     model = Balance
     template_name = 'stocksmanagement/list_balance.html'
     context_object_name = 'queryset'
@@ -576,3 +794,57 @@ class BalanceListView(ListView):
                 description__icontains=description
             )
         return query_set
+
+
+@login_required
+def export_csv_balance(request):
+    query_set = Balance.objects.all().filter(client=request.user)
+    ecus_code = request.GET.get('ecus_code', '')
+    description = request.GET.get('description', '')
+    content_disposition = 'attachment; filename="Balance'
+    if ecus_code:
+        query_set = query_set.filter(
+            ecus_code__icontains=ecus_code
+        )
+        content_disposition += f' - {ecus_code}'
+    if description:
+        query_set = query_set.filter(
+            description__icontains=description
+        )
+        content_disposition += f' - {description}'
+    content_disposition += '.csv"'
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = content_disposition
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            'ERP code',
+            'Ecus Code',
+            'Decription',
+            'E21',
+            'B13',
+            'A42',
+            'E52',
+            'RM Stock',
+            'FG Stock',
+            'WIP',
+            'BALANCE',
+        ]
+    )
+    for stock in query_set:
+        writer.writerow(
+            [
+                stock.erp_code,
+                stock.ecus_code,
+                stock.description,
+                stock.e21,
+                stock.b13,
+                stock.a42,
+                stock.e52,
+                stock.rm_stock,
+                stock.fg_stock,
+                stock.wip_stock,
+                stock.get_balance()
+            ]
+        )
+    return response
