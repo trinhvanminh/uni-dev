@@ -15,7 +15,8 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Chapter',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('no', models.SmallIntegerField()),
                 ('name', models.CharField(max_length=100)),
             ],
@@ -23,15 +24,28 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Heading',
             fields=[
-                ('no', models.CharField(max_length=4, primary_key=True, serialize=False)),
+                << << << < HEAD
+                ('no', models.CharField(max_length=4,
+                 primary_key=True, serialize=False)),
                 ('name', models.CharField(blank=True, max_length=100, null=True)),
-                ('chapter', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='hscode.chapter')),
+                ('chapter', models.ForeignKey(blank=True, null=True,
+                 on_delete=django.db.models.deletion.CASCADE, to='hscode.chapter')),
+                == == == =
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
+                ('no', models.TextField(max_length=4)),
+                ('name', models.CharField(max_length=100)),
+                ('description', models.TextField()),
+                ('chapter', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='hscode.chapter')),
+                >>>>>> > 2a2cb229b4c727c4212802a7b390e8e05b1ecf3b
             ],
         ),
         migrations.CreateModel(
             name='Section',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('no', models.SmallIntegerField()),
                 ('name', models.CharField(max_length=100)),
             ],
@@ -39,34 +53,58 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='SubHeading',
             fields=[
-                ('no', models.CharField(max_length=8, primary_key=True, serialize=False)),
+                << << << < HEAD
+                ('no', models.CharField(max_length=8,
+                 primary_key=True, serialize=False)),
                 ('name', models.CharField(blank=True, max_length=100, null=True)),
+                == == == =
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
+                ('no', models.TextField(max_length=8)),
+                ('name', models.CharField(max_length=100)),
+                >>>>>> > 2a2cb229b4c727c4212802a7b390e8e05b1ecf3b
                 ('description', models.TextField()),
-                ('heading', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='hscode.heading')),
+                ('heading', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='hscode.heading')),
             ],
         ),
         migrations.CreateModel(
+            << << << < HEAD
             name='Product',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.TextField(blank=True, null=True)),
-                ('heading', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='hscode.heading')),
-                ('subheading', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='hscode.subheading')),
+                ('heading', models.ForeignKey(blank=True, null=True,
+                 on_delete=django.db.models.deletion.CASCADE, to='hscode.heading')),
+                ('subheading', models.ForeignKey(blank=True, null=True,
+                 on_delete=django.db.models.deletion.CASCADE, to='hscode.subheading')),
             ],
         ),
         migrations.CreateModel(
+            == == == =
+            >>>>>> > 2a2cb229b4c727c4212802a7b390e8e05b1ecf3b
             name='Note',
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('id', models.BigAutoField(auto_created=True,
+                 primary_key=True, serialize=False, verbose_name='ID')),
                 ('no', models.CharField(max_length=5)),
                 ('description', models.TextField()),
-                ('chapter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='hscode.chapter')),
-                ('section', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='hscode.section')),
+                ('chapter', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='hscode.chapter')),
+                ('section', models.ForeignKey(
+                    on_delete=django.db.models.deletion.CASCADE, to='hscode.section')),
             ],
         ),
         migrations.AddField(
             model_name='chapter',
             name='section',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='hscode.section'),
+            << << << < HEAD
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='hscode.section'),
+            == == == =
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to='hscode.section'),
+            >>>>>> > 2a2cb229b4c727c4212802a7b390e8e05b1ecf3b
         ),
     ]
