@@ -75,14 +75,14 @@
                     <td>{{instance.erp_code}}</td>
                     <td>{{instance.ecus_code}}</td>
                     <td>{{instance.description}}</td>
-                    <td>{{instance.e21}}</td>
-                    <td>{{instance.b13}}</td>
-                    <td>{{instance.a42}}</td>
-                    <td>{{instance.e52}}</td>
-                    <td>{{instance.rm_stock}}</td>
-                    <td>{{instance.fg_stock}}</td>
-                    <td>{{instance.wip_stock}}</td>
-                    <td>{{instance.get_balance}}</td>
+                    <td>{{instance.e21 | floatformat:-2}}</td>
+                    <td>{{instance.b13 | floatformat:-2}}</td>
+                    <td>{{instance.a42 | floatformat:-2}}</td>
+                    <td>{{instance.e52 | floatformat:-2}}</td>
+                    <td>{{instance.rm_stock | floatformat:-2}}</td>
+                    <td>{{instance.fg_stock | floatformat:-2}}</td>
+                    <td>{{instance.wip_stock | floatformat:-2}}</td>
+                    <td>{{instance.get_balance | floatformat:-2}}</td>
                   </tr>
               {% endfor %}
             </tbody>

@@ -1,17 +1,21 @@
-from hscode.views import export
-from django.db.models import query
-from django.utils.datastructures import MultiValueDictKeyError
-from client.models import Client
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from .models import Balance, Stock, Ecus, BOM
-from .forms import BOMCreateForm, BOMSearchForm, BOMUpdateForm, BalanceSearchForm, EcusSearchForm, EcusUpdateForm, StockCreateForm, StockSearchForm, StockUpdateForm, EcusCreateForm
-from django.contrib.auth.decorators import login_required
-import pandas as pd
 import csv
+from io import StringIO
+
+import pandas as pd
+import xlsxwriter
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
+from django.shortcuts import redirect, render
+from django.utils.datastructures import MultiValueDictKeyError
 from django.views.generic import ListView
+
+from .forms import (BalanceSearchForm, BOMCreateForm, BOMSearchForm,
+                    BOMUpdateForm, EcusCreateForm, EcusSearchForm,
+                    EcusUpdateForm, StockCreateForm, StockSearchForm,
+                    StockUpdateForm)
+from .models import BOM, Balance, Ecus, Stock
 
 
 class IOBListView(LoginRequiredMixin, ListView):
@@ -214,6 +218,7 @@ def import_excel(request):
                 request, "Wrong format, please make sure the file you input is excel and the sheet contain information name 'IOB'")
             return redirect('import_excel')
         if check_format(imported_data):
+            imported_data.fillna(method='ffill', inplace=True)
             for _, row in imported_data.iterrows():
                 item = Stock(client=request.user)
 
@@ -440,51 +445,51 @@ def import_excel_ecus(request):
         if check_ecus_format(imported_data):
             for _, row in imported_data.iterrows():
                 item = Ecus(client=request.user)
-                if row['Số TK']:
+                if not pd.isna(row['Số TK']):
                     item.account_number = row['Số TK']
-                if row['Ngày ĐK']:
+                if not pd.isna(row['Ngày ĐK']):
                     item.registered_date = row['Ngày ĐK'].date()
-                if row['Mã loại hình']:
+                if not pd.isna(row['Mã loại hình']):
                     item.type_code = row['Mã loại hình']
-                if row['STT hàng']:
+                if not pd.isna(row['STT hàng']):
                     item.goods_no = row['STT hàng']
-                if row['Mã NPL/SP']:
+                if not pd.isna(row['Mã NPL/SP']):
                     item.npl_sp_code = row['Mã NPL/SP']
-                if row['Mã ERP']:
+                if not pd.isna(row['Mã ERP']):
                     item.erp_code = row['Mã ERP']
-                if row['Mã HS']:
+                if not pd.isna(row['Mã HS']):
                     item.hs = row['Mã HS']
-                if row['Tên hàng']:
+                if not pd.isna(row['Tên hàng']):
                     item.item_name = row['Tên hàng']
-                if row['Xuất xứ']:
+                if not pd.isna(row['Xuất xứ']):
                     item.from_country = row['Xuất xứ']
-                if row['Đơn giá']:
+                if not pd.isna(row['Đơn giá']):
                     item.unit_price = row['Đơn giá']
-                if row['Đơn giá tính thuế']:
+                if not pd.isna(row['Đơn giá tính thuế']):
                     item.unit_price_taxed = row['Đơn giá tính thuế']
-                if row['Tổng số lượng']:
+                if not pd.isna(row['Tổng số lượng']):
                     item.total = row['Tổng số lượng']
-                if row['Đơn vị tính']:
+                if not pd.isna(row['Đơn vị tính']):
                     item.unit = row['Đơn vị tính']
-                if row['Tổng số lượng 2']:
+                if not pd.isna(row['Tổng số lượng 2']):
                     item.total_2 = row['Tổng số lượng 2']
-                if row['Đơn vị tính 2']:
+                if not pd.isna(row['Đơn vị tính 2']):
                     item.unit_2 = row['Đơn vị tính 2']
-                if row['Trị giá NT']:
+                if not pd.isna(row['Trị giá NT']):
                     item.nt_value = row['Trị giá NT']
-                if row['Tổng trị giá']:
+                if not pd.isna(row['Tổng trị giá']):
                     item.total_value = row['Tổng trị giá']
-                if row['Thuế suất XNK']:
+                if not pd.isna(row['Thuế suất XNK']):
                     item.tax_rate = row['Thuế suất XNK']
-                if row['Tiền thuế XNK']:
+                if not pd.isna(row['Tiền thuế XNK']):
                     item.tax_cost = row['Tiền thuế XNK']
-                if row['Tên đối tác']:
+                if not pd.isna(row['Tên đối tác']):
                     item.partner = row['Tên đối tác']
-                if row['Số hóa đơn']:
+                if not pd.isna(row['Số hóa đơn']):
                     item.bill = row['Số hóa đơn']
-                if row['Ngày hóa đơn']:
+                if not pd.isna(row['Ngày hóa đơn']):
                     item.bill_date = row['Ngày hóa đơn'].date()
-                if row['Số hợp đồng']:
+                if not pd.isna(row['Số hợp đồng']):
                     item.contract = row['Số hợp đồng']
                 if not pd.isnull(row['Ngày hợp đồng']):
                     item.contract_date = row['Ngày hợp đồng'].date()
@@ -680,37 +685,37 @@ def import_excel_bom(request):
             imported_data = imported_data.iloc[1:, :]
             for _, row in imported_data.iterrows():
                 item = BOM(client=request.user)
-                if row['Code TP']:
+                if not pd.isna(row['Code TP']):
                     item.tp_code = row['Code TP']
-                if row['Mã Ecus']:
+                if not pd.isna(row['Mã Ecus']):
                     item.ecus_code = row['Mã Ecus']
-                if row['Tên']:
+                if not pd.isna(row['Tên']):
                     item.name = row['Tên']
-                if row['Decription']:
+                if not pd.isna(row['Decription']):
                     item.rm_code = row['Decription']
-                if row['Unit']:
+                if not pd.isna(row['Unit']):
                     item.description = row['Unit']
-                if row['RM.code']:
+                if not pd.isna(row['RM.code']):
                     item.unit = row['RM.code']
-                if row['Ecus code']:
+                if not pd.isna(row['Ecus code']):
                     item.ecus = row['Ecus code']
-                if row['Name']:
+                if not pd.isna(row['Name']):
                     item.name_2 = row['Name']
-                if row['Decription.1']:
+                if not pd.isna(row['Decription.1']):
                     item.description_2 = row['Decription.1']
-                if row['Unit.1']:
+                if not pd.isna(row['Unit.1']):
                     item.unit_2 = row['Unit.1']
-                if row['BOM']:
+                if not pd.isna(row['BOM']):
                     item.bom = row['BOM']
-                if row['Loss']:
+                if not pd.isna(row['Loss']):
                     item.loss = row['Loss']
-                if row['Thành phẩm xuất']:
+                if not pd.isna(row['Thành phẩm xuất']):
                     item.finish_product = row['Thành phẩm xuất']
-                if row['Quy đổi TP xuất']:
+                if not pd.isna(row['Quy đổi TP xuất']):
                     item.finish_product_convert = row['Quy đổi TP xuất']
-                if row['Thành phẩm tồn']:
+                if not pd.isna(row['Thành phẩm tồn']):
                     item.finish_product_inventory = row['Thành phẩm tồn']
-                if row['Quy đổi thành phẩm tồn']:
+                if not pd.isna(row['Quy đổi thành phẩm tồn']):
                     item.finish_product_exchange = row['Quy đổi thành phẩm tồn']
                 item.save()
             messages.success(request, 'Data Imported')
@@ -812,27 +817,25 @@ def export_csv_balance(request):
             description__icontains=description
         )
         content_disposition += f' - {description}'
-    content_disposition += '.csv"'
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = content_disposition
-    writer = csv.writer(response)
-    writer.writerow(
-        [
-            'ERP code',
-            'Ecus Code',
-            'Decription',
-            'E21',
-            'B13',
-            'A42',
-            'E52',
-            'RM Stock',
-            'FG Stock',
-            'WIP',
-            'BALANCE',
-        ]
-    )
+    content_disposition += '.xlsx"'
+    output = StringIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    print(worksheet)
+    worksheet.write('ERP code',
+                    'Ecus Code',
+                    'Decription',
+                    'E21',
+                    'B13',
+                    'A42',
+                    'E52',
+                    'RM Stock',
+                    'FG Stock',
+                    'WIP',
+                    'BALANCE')
+
     for stock in query_set:
-        writer.writerow(
+        worksheet.write(
             [
                 stock.erp_code,
                 stock.ecus_code,
@@ -847,4 +850,60 @@ def export_csv_balance(request):
                 stock.get_balance()
             ]
         )
+
+    workbook.close()
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = content_disposition
+    response.write(output.getvalue())
     return response
+
+    # query_set = Balance.objects.all().filter(client=request.user)
+    # ecus_code = request.GET.get('ecus_code', '')
+    # description = request.GET.get('description', '')
+    # content_disposition = 'attachment; filename="Balance'
+    # if ecus_code:
+    #     query_set = query_set.filter(
+    #         ecus_code__icontains=ecus_code
+    #     )
+    #     content_disposition += f' - {ecus_code}'
+    # if description:
+    #     query_set = query_set.filter(
+    #         description__icontains=description
+    #     )
+    #     content_disposition += f' - {description}'
+    # content_disposition += '.csv"'
+    # response = HttpResponse(content_type='text/csv')
+    # response['Content-Disposition'] = content_disposition
+    # writer = csv.writer(response)
+    # writer.writerow(
+    #     [
+    #         'ERP code',
+    #         'Ecus Code',
+    #         'Decription',
+    #         'E21',
+    #         'B13',
+    #         'A42',
+    #         'E52',
+    #         'RM Stock',
+    #         'FG Stock',
+    #         'WIP',
+    #         'BALANCE',
+    #     ]
+    # )
+    # for stock in query_set:
+    #     writer.writerow(
+    #         [
+    #             stock.erp_code,
+    #             stock.ecus_code,
+    #             stock.description,
+    #             stock.e21,
+    #             stock.b13,
+    #             stock.a42,
+    #             stock.e52,
+    #             stock.rm_stock,
+    #             stock.fg_stock,
+    #             stock.wip_stock,
+    #             stock.get_balance()
+    #         ]
+    #     )
+    # return response

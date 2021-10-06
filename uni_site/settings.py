@@ -64,6 +64,7 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 PASSWORD_RESET_TIMEOUT = 86400
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[THINHNT]"
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 
 # After 5 failed login attempts, restrict logins for 30 minutes
 ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
@@ -113,8 +114,12 @@ WSGI_APPLICATION = 'uni_site.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'iob',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+        'USER': 'root',
+        'PASSWORD': os.environ.get('DATABASE_PASSWORD'),
     }
 }
 
