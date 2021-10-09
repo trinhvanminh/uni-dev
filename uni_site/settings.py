@@ -43,6 +43,12 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+
+    # Rest API
+    'rest_framework',
+    'django_filters',
+    'rest_framework.authtoken',
+    'dj_rest_auth'
 ]
 
 
@@ -182,5 +188,20 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 # DJANGO-IMPORT-EXPORT
 
 IMPORT_EXPORT_USE_TRANSACTIONS = True
+
+# REST FRAMEWORK
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 50
+}
+
 
 django_heroku.settings(locals())

@@ -102,7 +102,7 @@ class Ecus(models.Model):
         Client, on_delete=models.CASCADE, blank=True, null=True)
     account_number = models.CharField(max_length=50, blank=True, null=True)
     registered_date = models.DateField(
-        default=timezone.now(), blank=True, null=True)
+        default=timezone.now, blank=True, null=True)
     type_code = models.CharField(max_length=3, blank=True, null=True)
     goods_no = models.FloatField(default=0, blank=True, null=True)
     npl_sp_code = models.CharField(max_length=50, blank=True, null=True)
