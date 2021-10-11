@@ -28,19 +28,21 @@ class StockSerializer(IOBSerializer):
                         'get_ending_quantity', ]
 
 
-# class EcusSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = Ecus
-#         fields = ['url', 'username', 'email', 'groups']
+class EcusSerializer(IOBSerializer):
+    class Meta:
+        model = Ecus
+        fields = '__all__'
 
 
-# class BOMSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = BOM
-#         fields = ['url', 'username', 'email', 'groups']
+class BOMSerializer(IOBSerializer):
+    class Meta:
+        model = BOM
+        fields = '__all__'
 
 
-# class BalanceSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = Balance
-#         fields = ['url', 'username', 'email', 'groups']
+class BalanceSerializer(IOBSerializer):
+    class Meta:
+        model = Balance
+        fields = '__all__'
+        extra_fields = ['get_ecus',
+                        'get_balance', ]
