@@ -38,7 +38,7 @@ class Client(AbstractBaseUser, PermissionsMixin):
         blank=True,
     )
     profile_picture = models.ImageField(
-        blank=True, null=True, default='niceblog/blog-2_zq82wf.jpg'
+        blank=True, null=True, default='default.jpg'
     )
     date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)

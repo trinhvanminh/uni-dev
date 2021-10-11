@@ -5,8 +5,9 @@ from .serializers import StockSerializer
 
 
 class StockViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-    queryset = Stock.objects.all().order_by('-date')
     serializer_class = StockSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        client = self.request.user
+        return Stock.objects.filter(client=client)
