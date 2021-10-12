@@ -157,7 +157,7 @@ class BOM(models.Model):
     export_to_CSV = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return self.ecus_code
+        return str(self.ecus_code)
 
 
 class Balance(models.Model):
@@ -184,3 +184,12 @@ class Balance(models.Model):
 
     def get_balance(self):
         return self.rm_stock + self.fg_stock + self.wip_stock - self.get_ecus()
+
+
+class File(models.Model):
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    excel_file = models.FileField(blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.excel_file.name

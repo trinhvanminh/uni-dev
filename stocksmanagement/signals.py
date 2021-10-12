@@ -5,6 +5,7 @@ from .models import Balance, Ecus, BOM, Stock
 
 @receiver(pre_save, sender=Ecus)
 def on_ecus_change(sender, instance, **kwargs):
+    print('Change this')
     if instance.id is None:
         try:
             if instance.npl_sp_code:

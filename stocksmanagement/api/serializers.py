@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from stocksmanagement.models import Stock, Ecus, BOM, Balance
+from stocksmanagement.models import Stock, Ecus, BOM, Balance, File
 
 
 class IOBSerializer(serializers.ModelSerializer):
@@ -46,3 +46,9 @@ class BalanceSerializer(IOBSerializer):
         fields = '__all__'
         extra_fields = ['get_ecus',
                         'get_balance', ]
+
+
+class FileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = File
+        fields = ('excel_file', 'timestamp')
