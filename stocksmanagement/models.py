@@ -163,7 +163,7 @@ class BOM(models.Model):
 class Balance(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     erp_code = models.CharField(max_length=50, blank=True, null=True)
-    ecus_code = models.CharField(primary_key=True, max_length=50)
+    ecus_code = models.CharField(max_length=50, null=True, blank=True)
     description = models.CharField(max_length=250, blank=True, null=True)
     ecus_unit = models.CharField(max_length=4, blank=True, null=True)
     unit = models.CharField(max_length=4, blank=True, null=True)
@@ -175,6 +175,9 @@ class Balance(models.Model):
     rm_stock = models.FloatField(default=0, blank=True, null=True)
     fg_stock = models.FloatField(default=0, blank=True, null=True)
     wip_stock = models.FloatField(default=0, blank=True, null=True)
+
+    class Meta:
+        unique_together = (("client", "ecus_code"),)
 
     def __str__(self) -> str:
         return self.ecus_code

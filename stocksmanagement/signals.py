@@ -5,11 +5,11 @@ from .models import Balance, Ecus, BOM, Stock
 
 @receiver(pre_save, sender=Ecus)
 def on_ecus_change(sender, instance, **kwargs):
-    print('Change this')
     if instance.id is None:
         try:
             if instance.npl_sp_code:
-                balance_query = Balance.objects.get(pk=instance.npl_sp_code)
+                balance_query = Balance.objects.get(
+                    client=instance.client, ecus_code=instance.npl_sp_code)
                 if instance.total:
                     if instance.type_code == 'E21':
                         if balance_query.e21:
@@ -53,7 +53,8 @@ def on_ecus_change(sender, instance, **kwargs):
         previous = Ecus.objects.get(id=instance.id)
         try:
             if instance.npl_sp_code:
-                balance_query = Balance.objects.get(pk=instance.npl_sp_code)
+                balance_query = Balance.objects.get(
+                    client=instance.client, ecus_code=instance.ecus_code)
                 if instance.total:
                     if previous.total:
                         if instance.type_code == 'E21':
@@ -106,7 +107,8 @@ def on_bom_change(sender, instance, **kwargs):
     if instance.id is None:
         try:
             if instance.ecus_code:
-                balance_query = Balance.objects.get(pk=instance.ecus_code)
+                balance_query = Balance.objects.get(
+                    client=instance.client, ecus_code=instance.ecus_code)
                 if instance.finish_product_exchange:
                     if balance_query.fg_stock:
                         balance_query.fg_stock += instance.finish_product_exchange
@@ -127,7 +129,8 @@ def on_bom_change(sender, instance, **kwargs):
         previous = BOM.objects.get(id=instance.id)
         try:
             if instance.ecus_code:
-                balance_query = Balance.objects.get(pk=instance.ecus_code)
+                balance_query = Balance.objects.get(
+                    client=instance.client, ecus_code=instance.ecus_code)
                 if instance.finish_product_exchange:
                     if balance_query.fg_stock:
                         if previous.finish_product_exchange:
@@ -156,7 +159,8 @@ def on_stock_change(sender, instance, **kwargs):
     if instance.id is None:
         try:
             if instance.ecus_code:
-                balance_query = Balance.objects.get(pk=instance.ecus_code)
+                balance_query = Balance.objects.get(
+                    client=instance.client, ecus_code=instance.ecus_code)
                 if balance_query.rm_stock:
                     balance_query.rm_stock += instance.get_ending_quantity()
                 else:
@@ -175,7 +179,8 @@ def on_stock_change(sender, instance, **kwargs):
         previous = Stock.objects.get(id=instance.id)
         try:
             if instance.ecus_code:
-                balance_query = Balance.objects.get(pk=instance.ecus_code)
+                balance_query = Balance.objects.get(
+                    client=instance.client, ecus_code=instance.ecus_code)
                 if balance_query.rm_stock:
                     balance_query.rm_stock = balance_query.fg_stock + \
                         instance.get_ending_quantity() - previous.get_ending_quantity()

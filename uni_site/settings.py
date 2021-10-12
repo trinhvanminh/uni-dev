@@ -30,7 +30,7 @@ INSTALLED_APPS = [
 
     # local
     'hscode',
-    'stocksmanagement.apps.StocksmanagementConfig',
+    'stocksmanagement',
     'marketing',
 
     # third-party apps
