@@ -1,7 +1,8 @@
 from pathlib import Path
 import os
 import django_heroku
-
+import datetime
+from django.conf import settings
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'import_export',
 
     # all-auth
+    'corsheaders',
     'client',
     'django.contrib.sites',
     'allauth',
@@ -80,12 +82,13 @@ ACCOUNT_PASSWORD_MIN_LENGTH = 8
 
 # Other settings
 # ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https"
-ACCOUNT_LOGIN_ON_PASSWORD_RESET = True
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = False
 SOCIALACCOUNT_AUTO_SIGNUP = False
 #-------------------------------------------------------#
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -93,6 +96,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# CORS_ORIGIN_ALLOW_ALL = True
+
+# CORS_ORIGIN_WHITELIST = (
+#     'http://192.168.1.17',
+# )
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^http://192.168.1.17$",
 ]
 
 ROOT_URLCONF = 'uni_site.urls'
@@ -195,7 +208,7 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated'
@@ -209,6 +222,39 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 50
 }
 
-APPEND_SLASH = False
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=2),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': settings.SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'JTI_CLAIM': 'jti',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
+
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': datetime.timedelta(days=1),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': datetime.timedelta(days=2),
+}
+
+JWT_AUTH_COOKIE = 'iob-auth'
+JWT_AUTH_REFRESH_COOKIE = 'iob-refresh-token'
+
+
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'jwt-auth'
 
 django_heroku.settings(locals())

@@ -821,7 +821,6 @@ def export_csv_balance(request):
     output = StringIO()
     workbook = xlsxwriter.Workbook(output)
     worksheet = workbook.add_worksheet()
-    print(worksheet)
     worksheet.write('ERP code',
                     'Ecus Code',
                     'Decription',
