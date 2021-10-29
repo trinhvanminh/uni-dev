@@ -37,7 +37,6 @@ class IOBListView(LoginRequiredMixin, ListView):
         description = self.request.GET.get('description', '')
         item_name = self.request.GET.get('item_name', '')
         export_to_csv = self.request.GET.get('export_to_CSV', False)
-        print(export_to_csv)
         if description:
             self.query_set = self.query_set.filter(
                 description__icontains=description

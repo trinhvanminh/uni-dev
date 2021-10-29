@@ -29,6 +29,9 @@ class StockSerializer(IOBSerializer):
 
 
 class EcusSerializer(IOBSerializer):
+    # registered_date = serializers.DateField(
+    #     format="%d-%m-%Y", required=False)
+
     class Meta:
         model = Ecus
         fields = '__all__'

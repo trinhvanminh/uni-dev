@@ -1,9 +1,13 @@
+import csv
+from io import StringIO
+from django.http.response import HttpResponse, HttpResponseRedirect
 import pandas as pd
 from django.utils.datastructures import MultiValueDictKeyError
 from rest_framework import permissions, status, viewsets
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+import xlsxwriter
 from stocksmanagement.models import BOM, Balance, Ecus, Stock
 
 from .serializers import (BalanceSerializer, BOMSerializer, EcusSerializer,
@@ -26,7 +30,13 @@ class StockViewSet(viewsets.ModelViewSet):
         if item_name is not None:
             queryset = queryset.filter(item_name__icontains=item_name)
 
-        return queryset
+        return queryset.order_by('-date')
+
+    def perform_create(self, serializer):
+        kwargs = {
+            'client': self.request.user
+        }
+        serializer.save(**kwargs)
 
 
 class EcusViewSet(viewsets.ModelViewSet):
@@ -45,7 +55,13 @@ class EcusViewSet(viewsets.ModelViewSet):
         if from_country is not None:
             queryset = queryset.filter(from_country__icontains=from_country)
 
-        return queryset
+        return queryset.order_by('-registered_date')
+
+    def perform_create(self, serializer):
+        kwargs = {
+            'client': self.request.user
+        }
+        serializer.save(**kwargs)
 
 
 class BOMViewSet(viewsets.ModelViewSet):
@@ -68,7 +84,13 @@ class BOMViewSet(viewsets.ModelViewSet):
         if ecus is not None:
             queryset = queryset.filter(ecus__icontains=ecus)
 
-        return queryset
+        return queryset.order_by('-date_created')
+
+    def perform_create(self, serializer):
+        kwargs = {
+            'client': self.request.user
+        }
+        serializer.save(**kwargs)
 
 
 class BalanceViewSet(viewsets.ModelViewSet):
@@ -87,7 +109,7 @@ class BalanceViewSet(viewsets.ModelViewSet):
         if description is not None:
             queryset = queryset.filter(description__icontains=description)
 
-        return queryset
+        return queryset.order_by('-date_created')
 
 
 def check_format_iob(df):
@@ -357,3 +379,271 @@ class BOMExcelImport(APIView):
                 return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
         else:
             return Response(file_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IOBExcelExport(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        query_set = Stock.objects.all().filter(client=request.user)
+
+        description = request.query_params.get('description', '')
+        item_name = request.query_params.get('item_name', '')
+        content_disposition = 'attachment; filename="List of stock'
+        if description:
+            query_set = query_set.filter(
+                description__icontains=description
+            )
+            content_disposition += f' - {description}'
+        if item_name:
+            query_set = query_set.filter(
+                item_name__icontains=item_name
+            )
+            content_disposition += f' - {item_name}'
+        content_disposition += '.csv"'
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = content_disposition
+        writer = csv.writer(response)
+        writer.writerow(['', ' ', ' ', ' ', ' Beginning Inventory', ' ', ' ', ' PR Purchase Receipt', ' ', ' ', ' MR Production Receipt', ' ', ' ', ' OR Unplanned Receipt', ' ', ' ', ' Stock Transfer Receipt',
+                        ' ', ' ', ' PI Issue for production', ' ', ' ', ' DI Sales Issue', ' ', ' ', ' OI Unplanned Issue', ' ', ' ', ' Stock Transfer Issue', ' ', ' '])
+        writer.writerow(['Item Acount Description', ' Item', ' Ecus', ' Item Description', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price',
+                        ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price', ' Quantity', ' Amount', ' Price'])
+        for stock in query_set:
+            writer.writerow(
+                [
+                    stock.description,
+                    stock.item_name,
+                    stock.ecus_code,
+                    stock.item_desciption,
+                    stock.begin_quantity,
+                    stock.get_beginning_amount(),
+                    stock.begin_price,
+                    stock.pr_purchase_quantity,
+                    stock.get_pr_purchase_amount(),
+                    stock.pr_purchase_price,
+                    stock.mr_production_quantity,
+                    stock.get_mr_production_amount(),
+                    stock.mr_production_price,
+                    stock.or_unplanned_quantity,
+                    stock.get_or_unplanned_amount(),
+                    stock.or_unplanned_price,
+                    stock.stock_transfer_quantity,
+                    stock.get_stock_transfer_amount(),
+                    stock.stock_transfer_price,
+                    stock.pi_issue_production_quantity,
+                    stock.get_pi_issue_production_amount(),
+                    stock.pi_issue_production_price,
+                    stock.di_sale_issue_quantity,
+                    stock.get_di_sale_issue_amount(),
+                    stock.di_sale_issue_price,
+                    stock.oi_unplanned_issue_quantity,
+                    stock.get_oi_unplanned_issue_amount(),
+                    stock.oi_unplanned_issue_price,
+                    stock.stock_transfer_issue_quantity,
+                    stock.get_stock_transfer_amount(),
+                    stock.stock_transfer_issue_price,
+                ]
+            )
+        return response
+
+
+class BalanceExcelExport(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        query_set = Balance.objects.all().filter(client=request.user)
+        ecus_code = request.query_params.get('ecus_code', '')
+        description = request.query_params.get('description', '')
+        content_disposition = 'attachment; filename="Balance'
+        if ecus_code:
+            query_set = query_set.filter(
+                ecus_code__icontains=ecus_code
+            )
+            content_disposition += f' - {ecus_code}'
+        if description:
+            query_set = query_set.filter(
+                description__icontains=description
+            )
+            content_disposition += f' - {description}'
+        content_disposition += '.xlsx"'
+        output = StringIO()
+        workbook = xlsxwriter.Workbook(output)
+        worksheet = workbook.add_worksheet()
+        worksheet.write('ERP code',
+                        'Ecus Code',
+                        'Decription',
+                        'E21',
+                        'B13',
+                        'A42',
+                        'E52',
+                        'RM Stock',
+                        'FG Stock',
+                        'WIP',
+                        'BALANCE')
+
+        for stock in query_set:
+            worksheet.write(
+                [
+                    stock.erp_code,
+                    stock.ecus_code,
+                    stock.description,
+                    stock.e21,
+                    stock.b13,
+                    stock.a42,
+                    stock.e52,
+                    stock.rm_stock,
+                    stock.fg_stock,
+                    stock.wip_stock,
+                    stock.get_balance()
+                ]
+            )
+
+        workbook.close()
+        response = HttpResponse(content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = content_disposition
+        response.write(output.getvalue())
+        return response
+
+
+class EcusExcelExport(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        query_set = Ecus.objects.all().filter(client=request.user)
+        type_code = request.query_params.get('type_code', '')
+        from_country = request.query_params.get('from_country', '')
+        content_disposition = 'attachment; filename="Ecus'
+        if type_code:
+            query_set = query_set.filter(
+                type_code__icontains=type_code
+            )
+            content_disposition += f' - {type_code}'
+        if from_country:
+            query_set = query_set.filter(
+                from_country__icontains=from_country
+            )
+            content_disposition += f' - {from_country}'
+        content_disposition += '.csv"'
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = content_disposition
+        writer = csv.writer(response)
+        writer.writerow([
+                        'Account Number',
+                        'Registered Date',
+                        'Type Code',
+                        'Goods No',
+                        'NPL/SP Code',
+                        'ERP Code',
+                        'HS',
+                        'Item Name',
+                        'Country',
+                        'Unit Price',
+                        'Taxed Price',
+                        'Total',
+                        'Unit',
+                        'Total 2',
+                        'Unit 2',
+                        'NT value',
+                        'Total value',
+                        'Tax rate',
+                        'Tax cost',
+                        'Partner',
+                        'Bill',
+                        'Bill date',
+                        'Contract',
+                        'Contract date'
+                        ])
+        for stock in query_set:
+            writer.writerow(
+                [
+                    stock.account_number,
+                    stock.registered_date,
+                    stock.type_code,
+                    stock.goods_no,
+                    stock.npl_sp_code,
+                    stock.erp_code,
+                    stock.hs,
+                    stock.item_name,
+                    stock.from_country,
+                    stock.unit_price,
+                    stock.unit_price_taxed,
+                    stock.total,
+                    stock.unit,
+                    stock.total_2,
+                    stock.unit_2,
+                    stock.nt_value,
+                    stock.total_value,
+                    stock.tax_rate,
+                    stock.tax_cost,
+                    stock.partner,
+                    stock.bill,
+                    stock.bill_date,
+                    stock.contract,
+                    stock.contract_date
+                ]
+            )
+        return response
+
+
+class BOMExcelExport(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        query_set = BOM.objects.all().filter(client=request.user)
+        ecus_code = request.query_params.get('ecus_code', '')
+        tp_code = request.query_params.get('tp_code', '')
+        content_disposition = 'attachment; filename="BOM'
+        if ecus_code:
+            query_set = query_set.filter(
+                ecus_code__icontains=ecus_code
+            )
+            content_disposition += f' - {ecus_code}'
+        if tp_code:
+            query_set = query_set.filter(
+                tp_code__icontains=tp_code
+            )
+            content_disposition += f' - {tp_code}'
+        content_disposition += '.csv"'
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = content_disposition
+        writer = csv.writer(response)
+        writer.writerow(
+            [
+                'Code TP',
+                'Ecus Code',
+                'Name',
+                'Decription',
+                'Unit',
+                'Ecus',
+                'Name 2',
+                'Decription',
+                'Unit',
+                'BOM',
+                'Loss',
+                'Thành phẩm xuất',
+                'Quy đổi TP xuất',
+                'Thành phẩm tồn',
+                'Quy đổi thành phẩm tồn'
+            ]
+        )
+        for stock in query_set:
+            writer.writerow(
+                [
+                    stock.tp_code,
+                    stock.ecus_code,
+                    stock.name,
+                    stock.description,
+                    stock.unit,
+                    stock.ecus,
+                    stock.name_2,
+                    stock.description_2,
+                    stock.unit_2,
+                    stock.bom,
+                    stock.loss,
+                    stock.finish_product,
+                    stock.finish_product_convert,
+                    stock.finish_product_inventory,
+                    stock.finish_product_exchange
+                ]
+            )
+        return response

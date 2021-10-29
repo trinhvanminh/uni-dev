@@ -1,6 +1,7 @@
 from django.db import models
 from client.models import Client
 from django.utils import timezone
+import datetime
 
 description_choice = (
     ('Finished Goods(제품)', 'Finished Goods(제품)'),
@@ -16,7 +17,6 @@ class Stock(models.Model):
 
     description = models.CharField(
         choices=description_choice, max_length=100, null=True, blank=True)
-    date = models.DateField(auto_now_add=True)
     item_name = models.CharField(max_length=50, blank=True, null=True)
     ecus_code = models.CharField(max_length=50, blank=True, null=True)
     item_desciption = models.CharField(max_length=150, blank=True, null=True)
@@ -61,7 +61,7 @@ class Stock(models.Model):
     export_to_CSV = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.item_name
+        return str(self.item_name)
 
     def get_beginning_amount(self):
         return (self.begin_price * self.begin_quantity)
@@ -102,7 +102,7 @@ class Ecus(models.Model):
         Client, on_delete=models.CASCADE, blank=True, null=True)
     account_number = models.CharField(max_length=50, blank=True, null=True)
     registered_date = models.DateField(
-        default=timezone.now, blank=True, null=True)
+        default=datetime.date.today, blank=True, null=True)
     type_code = models.CharField(max_length=3, blank=True, null=True)
     goods_no = models.FloatField(default=0, blank=True, null=True)
     npl_sp_code = models.CharField(max_length=50, blank=True, null=True)
@@ -133,7 +133,10 @@ class Ecus(models.Model):
 
 
 class BOM(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client = models.ForeignKey(
+        Client, on_delete=models.CASCADE, blank=True, null=True)
+    date_created = models.DateTimeField(
+        auto_now_add=True, blank=True, null=True)
     tp_code = models.CharField(max_length=50, blank=True, null=True)
     ecus_code = models.CharField(max_length=50, blank=True, null=True)
     name = models.CharField(max_length=100, blank=True, null=True)
@@ -162,6 +165,8 @@ class BOM(models.Model):
 
 class Balance(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    date_created = models.DateTimeField(
+        auto_now_add=True, blank=True, null=True)
     erp_code = models.CharField(max_length=50, blank=True, null=True)
     ecus_code = models.CharField(max_length=50, null=True, blank=True)
     description = models.CharField(max_length=250, blank=True, null=True)

@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'hscode',
     'stocksmanagement',
     'marketing',
+    'iob_demo',
 
     # third-party apps
     'crispy_forms',
@@ -98,15 +99,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = True
 
 # CORS_ORIGIN_WHITELIST = (
 #     'http://192.168.1.17',
 # )
 
-CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^http://192.168.1.17$",
-]
+# CORS_ALLOWED_ORIGIN_REGEXES = [
+#     r"^http://192.168.1.17$",
+# ]
 
 ROOT_URLCONF = 'uni_site.urls'
 
@@ -194,11 +195,18 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'thanhthinhkrb@gmail.com'
+EMAIL_HOST_PASSWORD = 'sryjxbqtudysrgdo'
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 300000
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = None
 # DJANGO-IMPORT-EXPORT
 
 IMPORT_EXPORT_USE_TRANSACTIONS = True
@@ -221,7 +229,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 50
 }
-
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(days=1),

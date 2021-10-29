@@ -54,7 +54,7 @@ def on_ecus_change(sender, instance, **kwargs):
         try:
             if instance.npl_sp_code:
                 balance_query = Balance.objects.get(
-                    client=instance.client, ecus_code=instance.ecus_code)
+                    client=instance.client, ecus_code=instance.npl_sp_code)
                 if instance.total:
                     if previous.total:
                         if instance.type_code == 'E21':
@@ -148,7 +148,7 @@ def on_bom_change(sender, instance, **kwargs):
             if instance.ecus_code:
                 new_balance = Balance(client=instance.client,
                                       ecus_code=instance.ecus_code)
-                if instance.type_code == 'E21':
+                if instance.ecus_code == 'E21':
                     new_balance.fg_stock = instance.finish_product_exchange
                 new_balance.save()
                 return
